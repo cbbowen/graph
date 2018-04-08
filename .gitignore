@@ -1,0 +1,3 @@
+# Ignore generated files in project directory
+project/*/**
+project/*.vcxproj.user
