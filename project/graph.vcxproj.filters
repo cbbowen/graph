@@ -118,9 +118,6 @@
     <ClInclude Include="..\include\graph\impl\Vert_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\test\catch.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\test\Graph_tester.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
