@@ -76,11 +76,11 @@ namespace graph {
 			template <class G, class Base, class... Args>
 			class Dot_format<G, const Base, Args...> {
 				template <class Tag, class Char, class Char_traits, class K, class Arg>
-				static auto output_attribute(std::basic_ostream<Char, Char_traits>& os, const K& k, const Arg& arg) {
+				static auto output_attribute(std::basic_ostream<Char, Char_traits>& os, const K& k, const Arg& arg, bool any_previous) {
 					constexpr auto tag_match = std::is_same<Tag, typename Arg::tag>{};
-					if constexpr (tag_match()) {
-						os << arg.name << " = " << arg.map(k);
-					}
+					if constexpr (tag_match())
+						os << (any_previous ? " , " : " [ ") <<
+							arg.name << " = " << arg.map(k);
 					return tag_match;
 				}
 				template <class Tag, class Char, class Char_traits, class K, std::size_t... I>
@@ -89,10 +89,9 @@ namespace graph {
 					// TODO: We could further check (at compile time) if any of the argument have a matching tag.
 					if constexpr (sizeof...(Args)) {
 						bool any = false;
-						// TODO: Make this formatting nice rather than merely correct.
-						os << " [";
-						((any = output_attribute<Tag>(os << (any ? ", " : " "), k, std::get<I>(args))()), ...);
-						os << " ]";
+						((any = output_attribute<Tag>(os, k, std::get<I>(args), any)() || any), ...);
+						if (any)
+							os << " ]";
 					}
 				}
 				template <class Tag, class Char, class Char_traits, class K>
