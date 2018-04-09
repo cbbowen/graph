@@ -12,15 +12,15 @@
 #include "construct_fn.hpp"
 #include "exceptions.hpp"
 
-#define _GRAPH_ADJACENCY_LIST_MUTABLE_HACK 1
-#if _GRAPH_ADJACENCY_LIST_MUTABLE_HACK
-#	define _GRAPH_ADJACENCY_LIST_VERT_ITERATOR iterator
-#	define _GRAPH_ADJACENCY_LIST_VLIST_MUTABLE mutable
-#	define _GRAPH_ADJACENCY_LIST_REMOVE_CONST(...) (__VA_ARGS__)
+#define GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK 1
+#if GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK
+#	define GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR iterator
+#	define GRAPH_V1_ADJACENCY_LIST_VLIST_MUTABLE mutable
+#	define GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST(...) (__VA_ARGS__)
 #else
-#	define _GRAPH_ADJACENCY_LIST_VERT_ITERATOR const_iterator
-#	define _GRAPH_ADJACENCY_LIST_VLIST_MUTABLE
-#	define _GRAPH_ADJACENCY_LIST_REMOVE_CONST(...) \
+#	define GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR const_iterator
+#	define GRAPH_V1_ADJACENCY_LIST_VLIST_MUTABLE
+#	define GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST(...) \
 	(_vlist.erase((__VA_ARGS__), (__VA_ARGS__)))
 #endif
 
@@ -46,7 +46,7 @@ namespace graph {
 				struct _Vert; // work around the fact that Vert can't be defined yet
 				using _elist_type = std::map<Size, _Vert>;
 				using _vlist_type = std::map<Order, _elist_type>;
-				using Vert = map_iterator_wrapper<typename _vlist_type::_GRAPH_ADJACENCY_LIST_VERT_ITERATOR>;
+				using Vert = map_iterator_wrapper<typename _vlist_type::GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR>;
 				struct _Vert : Vert {};
 				using _Edge = map_iterator_wrapper<typename _elist_type::const_iterator>;
 				using Edge = std::pair<Vert, _Edge>;
@@ -106,7 +106,7 @@ namespace graph {
 				}
 				auto _insert_edge(Vert k, Vert v) {
 					++_esize;
-					auto kit = _GRAPH_ADJACENCY_LIST_REMOVE_CONST(k._it);
+					auto kit = GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST(k._it);
 					auto&& es = kit->second;
 					return Edge{std::move(k),
 						es.emplace_hint(es.end(), _elast++, _Vert{std::move(v)})};
@@ -115,7 +115,7 @@ namespace graph {
 					for (auto& m : _emap_tracker.trackees())
 						m._erase(e);
 					Vert k = _edge_key(e);
-					auto kit = _GRAPH_ADJACENCY_LIST_REMOVE_CONST(k._it);
+					auto kit = GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST(k._it);
 					kit->second.erase(e.second._it);
 					--_esize;
 				}
@@ -218,7 +218,7 @@ namespace graph {
 					return Ephemeral_edge_set();
 				}
 			private:
-				_GRAPH_ADJACENCY_LIST_VLIST_MUTABLE _vlist_type _vlist;
+				GRAPH_V1_ADJACENCY_LIST_VLIST_MUTABLE _vlist_type _vlist;
 				Order _vlast = 0;
 				Size _esize = 0, _elast = 0;
 				tracker<erasable_base<Vert>> _vmap_tracker;
@@ -273,3 +273,8 @@ namespace graph {
 		}
 	}
 }
+
+#undef GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK
+#undef GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR
+#undef GRAPH_V1_ADJACENCY_LIST_VLIST_MUTABLE
+#undef GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST
