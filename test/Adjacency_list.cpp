@@ -243,40 +243,30 @@ TEST_CASE("adjacency list", "[benchmark]") {
 		REQUIRE(g.order() == order);
 		REQUIRE(g.size() == size);
 	}
+
+	G g;
+	for (std::size_t i = 0; i < order; ++i)
+		g.insert_vert();
+	for (std::size_t i = 0; i < size; ++i) {
+		auto u = g.random_vert(r), v = g.random_vert(r);
+		g.insert_edge(u, v);
+	}
+
 	BENCHMARK("query adjacencies") {
-		G g;
-		for (std::size_t i = 0; i < order; ++i)
-			g.insert_vert();
-		for (std::size_t i = 0; i < size; ++i) {
-			auto u = g.random_vert(r), v = g.random_vert(r);
-			g.insert_edge(u, v);
-		}
 		std::size_t total_degrees = 0;
 		for (auto v : g.verts())
 			for (auto e : g.out_edges(v))
 				++total_degrees;
-		REQUIRE(g.order() == order);
-		REQUIRE(g.size() == size);
 		REQUIRE(total_degrees == size);
 	}
-	BENCHMARK("erase vertices") {
-		G g;
-		for (std::size_t i = 0; i < order; ++i)
-			g.insert_vert();
-		for (std::size_t i = 0; i < order; ++i)
-			g.erase_vert(g.random_vert(r));
-		REQUIRE(g.order() == 0);
-	}
 	BENCHMARK("erase edges") {
-		G g;
-		for (std::size_t i = 0; i < order; ++i)
-			g.insert_vert();
-		for (std::size_t i = 0; i < size; ++i) {
-			auto u = g.random_vert(r), v = g.random_vert(r);
-			g.insert_edge(u, v);
-		}
 		for (std::size_t i = 0; i < size; ++i)
 			g.erase_edge(g.random_edge(r));
 		REQUIRE(g.size() == 0);
+	}
+	BENCHMARK("erase vertices") {
+		for (std::size_t i = 0; i < order; ++i)
+			g.erase_vert(g.random_vert(r));
+		REQUIRE(g.order() == 0);
 	}
 }

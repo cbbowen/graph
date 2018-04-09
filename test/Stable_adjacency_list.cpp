@@ -207,20 +207,20 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 		REQUIRE(g.order() == order);
 		REQUIRE(g.size() == size);
 	}
+	
+	G g;
+	for (std::size_t i = 0; i < order; ++i)
+		g.insert_vert();
+	for (std::size_t i = 0; i < size; ++i) {
+		auto u = g.random_vert(r), v = g.random_vert(r);
+		g.insert_edge(u, v);
+	}
+
 	BENCHMARK("query adjacencies") {
-		G g;
-		for (std::size_t i = 0; i < order; ++i)
-			g.insert_vert();
-		for (std::size_t i = 0; i < size; ++i) {
-			auto u = g.random_vert(r), v = g.random_vert(r);
-			g.insert_edge(u, v);
-		}
 		std::size_t total_degrees = 0;
 		for (auto v : g.verts())
 			for (auto e : g.out_edges(v))
 				++total_degrees;
-		REQUIRE(g.order() == order);
-		REQUIRE(g.size() == size);
 		REQUIRE(total_degrees == size);
 	}
 }
