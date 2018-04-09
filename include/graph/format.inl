@@ -37,8 +37,9 @@ namespace graph {
 				using _base_type = Dot_format<G, const Base, Args...>;
 				using _base_type::_base_type;
 			public:
+				// Note: `const Dot_format&` is not a typo.  This view is not modified, only the underlying graph.
 				template <class Char, class Char_traits>
-				friend decltype(auto) operator>>(std::basic_istream<Char, Char_traits>& is, Dot_format& self) {
+				friend decltype(auto) operator>>(std::basic_istream<Char, Char_traits>& is, const Dot_format& self) {
 					static_assert(sizeof...(Args) == 0, "attributes are not yet supported");
 					using Verts = traits::Insert_verts<std::reference_wrapper<G>>;
 					using Edges = traits::Insert_edges<std::reference_wrapper<G>>;
@@ -87,7 +88,7 @@ namespace graph {
 				void output_attributes(std::basic_ostream<Char, Char_traits>& os, const K& k, std::index_sequence<I...>) const {
 					// This condition is just an optimization and not require for correctness.
 					// TODO: We could further check (at compile time) if any of the argument have a matching tag.
-					if constexpr (sizeof...(Args)) {
+					if constexpr (sizeof...(Args) > 0) {
 						bool any = false;
 						((any = output_attribute<Tag>(os, k, std::get<I>(args), any)() || any), ...);
 						if (any)

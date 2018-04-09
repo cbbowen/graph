@@ -24,6 +24,9 @@ namespace graph {
 				const Impl& _impl() const {
 					return *this;
 				}
+				Impl& _impl() {
+					return *this;
+				}
 			};
 			template <class Impl>
 			struct derivable<Impl,
@@ -38,6 +41,9 @@ namespace graph {
 					_value(il, std::forward<Args>(args)...) {
 				}
 				const Impl& _impl() const {
+					return _value;
+				}
+				Impl& _impl() {
 					return _value;
 				}
 			private:
@@ -125,6 +131,10 @@ namespace graph {
 			using Edge_set = typename Edges::set_type;
 			Edge_set edge_set() const {
 				return Edges::set(this->_impl());
+			}
+			using Ephemeral_edge_set = typename Edges::ephemeral_set_type;
+			auto ephemeral_edge_set() const {
+				return Edges::ephemeral_set(this->_impl());
 			}
 
 			// Everything below this point should only be declared here and defined in their own .inl files.

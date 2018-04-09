@@ -51,12 +51,16 @@ SCENARIO("stable out-adjacency lists behave properly", "[Stable_out_adjacency_li
 			gt.insert_edge(s, t);
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			In_edge_graph_tester rgt{rg};
 		}
 		WHEN("searching for shortest paths from a vertex") {
-			auto weight = [](auto v) { return 1; };
 			auto s = gt.random_vert(r);
+			//auto weight = [](auto e) { return 1; };
+			auto weight = g.edge_map(0.0);
+			for (auto e : g.edges())
+				weight[e] = std::uniform_real_distribution<double>{}(r);
 			auto paths = g.shortest_paths_from(s, weight);
 			REQUIRE(paths(s).first == 0);
 			for (auto v : g.verts()) {
@@ -156,12 +160,16 @@ SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list
 			gt.insert_edge(s, t);
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			Out_edge_graph_tester rgt{rg};
 		}
 		WHEN("searching for shortest paths to a vertex") {
-			auto weight = [](auto v) { return 1; };
 			auto t = gt.random_vert(r);
+			//auto weight = [](auto e) { return 1; };
+			auto weight = g.edge_map(0.0);
+			for (auto e : g.edges())
+				weight[e] = std::uniform_real_distribution<double>{}(r);
 			auto paths = g.shortest_paths_to(t, weight);
 			REQUIRE(paths(t).first == 0);
 			for (auto v : g.verts()) {

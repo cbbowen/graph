@@ -3,6 +3,8 @@
 
 #include "Graph_tester.hpp"
 
+#include <sstream>
+
 SCENARIO("edge sets behave properly", "[Edge_list]") {
 	using G = graph::Edge_list;
 	GIVEN("an empty graph") {
@@ -73,9 +75,117 @@ SCENARIO("edge sets behave properly", "[Edge_list]") {
 			gt.clear();
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			Graph_tester rgt{rg};
 		}
+	}
+}
+
+SCENARIO("edge lists serialize and deserialize", "[Edge_list]") {
+	using G = graph::Edge_list;
+	GIVEN("an empty graph") {
+		G g;
+		WHEN("serializing") {
+			std::ostringstream os;
+			os << g.dot_format();
+		}
+		WHEN("deserializing") {
+			std::ostringstream os;
+			os << g.dot_format();
+			std::istringstream is(os.str());
+			g.clear();
+			is >> g.dot_format();
+			REQUIRE(g.order() == 0);
+			REQUIRE(g.size() == 0);
+		}
+		WHEN("deserializing string missing 'digraph'") {
+			std::istringstream is("g { }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const std::runtime_error&) {}
+		}
+		WHEN("deserializing string missing '{'") {
+			std::istringstream is("digraph g 1; { }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const std::runtime_error&) {}
+		}
+		WHEN("deserializing string missing ';'") {
+			std::istringstream is("digraph g { 1 }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const std::runtime_error&) {}
+		}
+		WHEN("deserializing string missing '->'") {
+			std::istringstream is("digraph g { 1 1; }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const std::runtime_error&) {}
+		}
+	}
+	GIVEN("a random graph") {
+		std::mt19937 r;
+		G g;
+		const std::size_t M = 20, N = 100;
+		for (std::size_t m = 0; m < M; ++m)
+			g.insert_vert();
+		for (std::size_t n = 0; n < N; ++n) {
+			auto s = g.random_vert(r), t = g.random_vert(r);
+			g.insert_edge(s, t);
+		}
+		WHEN("serializing") {
+			std::ostringstream os;
+			os << g.dot_format();
+		}
+		WHEN("deserializing") {
+			std::ostringstream os;
+			os << g.dot_format();
+			std::istringstream is(os.str());
+			g.clear();
+			is >> g.dot_format();
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == N);
+		}
+	}
+	GIVEN("an graph with attributes") {
+		using namespace graph::attributes;
+		G g;
+		auto v = g.insert_vert();
+		g.insert_edge(v, v);
+		auto v1 = [](auto v) { return 1; };
+		auto v2 = [](auto v) { return 1; };
+		auto e1 = [](auto v) { return 1; };
+		auto e2 = [](auto v) { return 1; };
+		WHEN("serializing") {
+			std::ostringstream os;
+			os << g.dot_format(
+				"v1"_of_vert = v1, "v2"_of_vert = v2,
+				"e1"_of_edge = e1, "e2"_of_edge = e2);
+		}
+		// WHEN("deserializing") {
+		// 	std::ostringstream os;
+		// 	os << g.dot_format(
+		// 		"v1"_of_vert = v1, "v2"_of_vert = v2,
+		// 		"e1"_of_edge = e1, "e2"_of_edge = e2);
+		// 	std::istringstream is(os.str());
+		// 	g.clear();
+		// 	auto _v1 = g.vert_map(0), _v2 = g.vert_map(0);
+		// 	auto _e1 = g.edge_map(0), _e2 = g.edge_map(0);
+		// 	is >> g.dot_format(
+		// 		"v1"_of_vert = _v1, "v2"_of_vert = _v2,
+		// 		"e1"_of_edge = _e1, "e2"_of_edge = _e2);
+		// 	REQUIRE(g.order() == 1);
+		// 	REQUIRE(g.size() == 1);
+		// 	for (auto v : g.verts())
+		// 		REQUIRE(_v1(v) == v1(v) && _v2(v) == v2(v));
+		// 	for (auto e : g.edges())
+		// 		REQUIRE(_e1(e) == e1(e) && _e2(e) == e2(e));
+		// }
 	}
 }
 

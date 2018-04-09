@@ -1,7 +1,7 @@
 
 # Easy
 
-Graphs are ubiquitous, so they should be easy to use, from construction to queries, and algorithms to I/O.  Consider the following snippet demonstrating each of these features.
+Graphs are ubiquitous, so they should be easy to use, from construction to queries, and algorithms to serialization.  Consider the following snippet demonstrating each of these features.
 
 ```cpp
 // Build a random graph

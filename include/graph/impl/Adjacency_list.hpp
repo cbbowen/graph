@@ -27,16 +27,15 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class Pair> struct ordered_pair_hasher;
-			template <class First, class Second>
-			struct ordered_pair_hasher<std::pair<First, Second>> {
-				std::size_t operator()(const std::pair<First, Second>& pair) const {
+			template <class Pair>
+			struct ordered_pair_hasher {
+				std::size_t operator()(const Pair& pair) const {
 					std::size_t hash = _hashers.first(pair.first);
 					hash ^= _hashers.second(pair.second) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 					return hash;
 				}
 			private:
-				std::pair<std::hash<First>, std::hash<Second>> _hashers;
+				std::pair<std::hash<typename Pair::first_type>, std::hash<typename Pair::second_type>> _hashers;
 			};
 
 			struct _Adjacency_list {
@@ -49,7 +48,14 @@ namespace graph {
 				using Vert = map_iterator_wrapper<typename _vlist_type::GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR>;
 				struct _Vert : Vert {};
 				using _Edge = map_iterator_wrapper<typename _elist_type::const_iterator>;
-				using Edge = std::pair<Vert, _Edge>;
+				struct Edge : std::pair<Vert, _Edge> {
+					using _base_type = std::pair<Vert, _Edge>;
+					using _base_type::_base_type;
+					template <class Char, class Traits>
+					friend decltype(auto) operator<<(std::basic_ostream<Char, Traits>& s, const Edge& e) {
+						return s << e.second;
+					}
+				};
 				auto verts() const {
 					return ranges::view::iota(
 							_vlist.begin(), _vlist.end()) |

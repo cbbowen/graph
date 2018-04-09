@@ -29,14 +29,14 @@ namespace graph {
 					// Optimized case when range supports random access
 					std::uniform_int_distribution<size_type> index_dist(0, size-1);
 					return ranges::at(std::forward<Range>(range), index_dist(random));
-				} else {
-					std::decay_t<ranges::range_value_type_t<Range>> a;
-					size_type n = 0;
-					for (auto b : std::forward<Range>(range))
-						if (!std::uniform_int_distribution<size_type>(0, n++)(random))
-							a = b;
-					return a;
 				}
+
+				std::decay_t<ranges::range_value_type_t<Range>> a;
+				size_type n = 0;
+				for (auto b : std::forward<Range>(range))
+					if (!std::uniform_int_distribution<size_type>(0, n++)(random))
+						a = b;
+				return a;
 			}
 		}
 		template <class Impl>

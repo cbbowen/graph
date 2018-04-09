@@ -85,12 +85,16 @@ SCENARIO("out-adjacency lists behave properly", "[Out_adjacency_list]") {
 				gt.erase_edge(gt.random_edge(r));
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			In_edge_graph_tester rgt{rg};
 		}
 		WHEN("searching for shortest paths from a vertex") {
 			auto s = gt.random_vert(r);
-			auto weight = [](auto v) { return 1; };
+			//auto weight = [](auto e) { return 1; };
+			auto weight = g.edge_map(0.0);
+			for (auto e : g.edges())
+				weight[e] = std::uniform_real_distribution<double>{}(r);
 			auto paths = g.shortest_paths_from(s, weight);
 			REQUIRE(paths(s).first == 0);
 			for (auto v : g.verts()) {
@@ -192,12 +196,16 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 			gt.clear();
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			Out_edge_graph_tester rgt{rg};
 		}
 		WHEN("searching for shortest paths to a vertex") {
 			auto t = gt.random_vert(r);
-			auto weight = [](auto v) { return 1; };
+			//auto weight = [](auto e) { return 1; };
+			auto weight = g.edge_map(0.0);
+			for (auto e : g.edges())
+				weight[e] = std::uniform_real_distribution<double>{}(r);
 			auto paths = g.shortest_paths_to(t, weight);
 			REQUIRE(paths(t).first == 0);
 			for (auto v : g.verts()) {
@@ -213,6 +221,93 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 		}
 	}
 }
+
+#ifndef NDEBUG
+SCENARIO("out-adjacency lists check preconditions when debugging", "[Out_adjacency_list]") {
+	using G = graph::Out_adjacency_list;
+	GIVEN("an empty graph") {
+		G g;
+		std::mt19937 r;
+		WHEN("selecting a random vertex") {
+			try {
+				g.random_vert(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("selecting a random edge") {
+			try {
+				g.random_edge(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+	GIVEN("a graph") {
+		G g;
+		auto u = g.insert_vert(), v = g.insert_vert();
+		g.insert_edge(u, v);
+		WHEN("removing a reachable vertex") {
+			try {
+				g.erase_vert(v);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+	GIVEN("a graph with a negative edge weight") {
+		G g;
+		auto u = g.insert_vert(), v = g.insert_vert();
+		g.insert_edge(u, v);
+		auto weight = g.edge_map(-1.0);
+		WHEN("searching for shortest paths from a vertex") {
+			try {
+				g.shortest_paths_from(u, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+}
+SCENARIO("in-adjacency lists check preconditions when debugging", "[In_adjacency_list]") {
+	using G = graph::In_adjacency_list;
+	GIVEN("an empty graph") {
+		G g;
+		std::mt19937 r;
+		WHEN("selecting a random vertex") {
+			try {
+				g.random_vert(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("selecting a random edge") {
+			try {
+				g.random_edge(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+	GIVEN("a graph") {
+		G g;
+		auto u = g.insert_vert(), v = g.insert_vert();
+		g.insert_edge(u, v);
+		WHEN("removing a reachable vertex") {
+			try {
+				g.erase_vert(u);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+	GIVEN("a graph with a negative edge weight") {
+		G g;
+		auto u = g.insert_vert(), v = g.insert_vert();
+		g.insert_edge(u, v);
+		auto weight = g.edge_map(-1.0);
+		WHEN("searching for shortest paths to a vertex") {
+			try {
+				g.shortest_paths_to(v, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+}
+#endif
 
 #ifdef GRAPH_BENCHMARK
 TEST_CASE("adjacency list", "[benchmark]") {

@@ -4,6 +4,8 @@
 #include <graph/Graph.hpp>
 
 #include <random>
+#include <sstream>
+#include <set>
 #include <range/v3/distance.hpp>
 #include <range/v3/algorithm/count.hpp>
 #include <range/v3/algorithm/sample.hpp>
@@ -34,17 +36,37 @@ struct Graph_tester {
 			es.insert(e);
 		}
 		require_invariants();
-		// test ephemeral maps here because there isn't a better place without slowing down tests too much
+		// test ephemeral sets and maps here because there isn't a better place without slowing down tests too much
 		auto _vm = g.ephemeral_vert_map(g.null_vert());
-		for (auto v : g.verts())
+		auto _vs = g.ephemeral_vert_set();
+		for (auto v : g.verts()) {
 			_vm[v] = v;
-		for (auto v : g.verts())
+			REQUIRE(!_vs.contains(v));
+			REQUIRE(_vs.insert(v));
+		}
+		for (auto v : g.verts()) {
 			REQUIRE(_vm(v) == v);
+			REQUIRE(_vs.contains(v));
+		}
+		REQUIRE(_vs.size() == g.order());
 		auto _em = g.ephemeral_edge_map(g.null_edge());
-		for (auto e : g.edges())
+		auto _es = g.ephemeral_edge_set();
+		for (auto e : g.edges()) {
 			_em[e] = e;
-		for (auto e : g.edges())
+			REQUIRE(!_es.contains(e));
+			REQUIRE(_es.insert(e));
+		}
+		for (auto e : g.edges()) {
 			REQUIRE(_em(e) == e);
+			REQUIRE(_es.contains(e));
+		}
+		REQUIRE(_es.size() == g.size());
+		// test streaming operator
+		std::set<std::string> vnames, enames;
+		for (auto v : g.verts())
+			REQUIRE(vnames.insert((std::stringstream() << v).str()).second);
+		for (auto e : g.edges())
+			REQUIRE(enames.insert((std::stringstream() << e).str()).second);
 	}
 	void require_vert_invariants() const {
 		for (auto v : g.verts()) {

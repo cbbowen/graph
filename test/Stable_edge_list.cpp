@@ -51,6 +51,7 @@ SCENARIO("stable edge lists behave properly", "[Stable_edge_list]") {
 			gt.insert_edge(s, t);
 		}
 		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
 			auto rg = g.reverse_view();
 			Graph_tester rgt{rg};
 		}

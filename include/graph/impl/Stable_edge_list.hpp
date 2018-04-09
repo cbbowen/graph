@@ -53,6 +53,7 @@ namespace graph {
 				auto edge_set() const {
 					return Edge_set();
 				}
+				// TODO: This can be made more efficient by using an Ephemeral_edge_map<bool>
 				using Ephemeral_edge_set = Edge_set;
 				auto ephemeral_edge_set() const {
 					return edge_set();

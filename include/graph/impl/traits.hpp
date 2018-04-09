@@ -240,7 +240,7 @@ namespace graph {
 			template <class G>
 			struct Insert_verts : Verts<G> {
 				template <class... Args>
-				static typename Verts<G>::Vert insert(G& g,
+				static typename Verts<G>::value_type insert(G& g,
 					Args&&... args) {
 					return g.insert_vert(std::forward<Args>(args)...);
 				}
@@ -251,7 +251,7 @@ namespace graph {
 				Verts<std::reference_wrapper<G>> {
 				using Ref = std::reference_wrapper<G>;
 				template <class... Args>
-				static typename Verts<G>::Vert insert(Ref ref,
+				static typename Verts<G>::value_type insert(Ref ref,
 					Args&&... args) {
 					return Insert_verts<G>::insert(ref.get(),
 						std::forward<Args>(args)...);
@@ -261,7 +261,7 @@ namespace graph {
 			template <class G>
 			struct Insert_edges : Edges<G> {
 				template <class... Args>
-				static typename Edges<G>::Edge insert(G& g,
+				static typename Edges<G>::value_type insert(G& g,
 					Args&&... args) {
 					return g.insert_edge(std::forward<Args>(args)...);
 				}
@@ -272,7 +272,7 @@ namespace graph {
 				Edges<std::reference_wrapper<G>> {
 				using Ref = std::reference_wrapper<G>;
 				template <class... Args>
-				static typename Edges<G>::Vert insert(Ref ref,
+				static typename Edges<G>::value_type insert(Ref ref,
 					Args&&... args) {
 					return Insert_edges<G>::insert(ref.get(),
 						std::forward<Args>(args)...);

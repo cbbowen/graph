@@ -44,6 +44,7 @@ namespace graph {
 				auto vert_set() const {
 					return Vert_set();
 				}
+				// TODO: This can be made more efficient by using an Ephemeral_vert_map<bool>
 				using Ephemeral_vert_set = Vert_set;
 				auto ephemeral_vert_set() const {
 					return vert_set();

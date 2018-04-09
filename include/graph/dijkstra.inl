@@ -46,7 +46,7 @@ namespace graph {
 							continue;
 #endif
 						auto c = combine(d, weight(e));
-#ifdef NDEBUG
+#ifndef NDEBUG
 						if (compare(c, d))
 							throw precondition_unmet("negative weight edge");
 #endif
