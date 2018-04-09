@@ -1,5 +1,8 @@
 
 // Older versions of libstdc++ don't have `std::uncaught_exceptions`
+#ifndef __has_include
+#	define __has_include(...) false
+#endif
 #if __has_include(<cxxabi.h>)
 #	include <cxxabi.h>
 #endif
