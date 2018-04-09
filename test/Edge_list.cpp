@@ -82,7 +82,7 @@ SCENARIO("edge sets behave properly", "[Edge_list]") {
 TEST_CASE("edge list", "[benchmark]") {
 	using G = graph::Edge_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 10000;
+	static const std::size_t size = 1000;
 	std::mt19937 r;
 	BENCHMARK("insert vertices") {
 		G g;

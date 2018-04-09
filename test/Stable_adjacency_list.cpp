@@ -181,7 +181,7 @@ SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list
 TEST_CASE("stable adjacency list", "[benchmark]") {
 	using G = graph::Stable_out_adjacency_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 10000;
+	static const std::size_t size = 1000;
 	std::mt19937 r;
 	BENCHMARK("insert vertices") {
 		G g;
@@ -207,7 +207,7 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 		REQUIRE(g.order() == order);
 		REQUIRE(g.size() == size);
 	}
-	
+
 	G g;
 	for (std::size_t i = 0; i < order; ++i)
 		g.insert_vert();
