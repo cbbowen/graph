@@ -213,3 +213,70 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 		}
 	}
 }
+
+TEST_CASE("adjacency list", "[benchmark]") {
+	using G = graph::Out_adjacency_list;
+	static const std::size_t order = 1000;
+	static const std::size_t size = 10000;
+	std::mt19937 r;
+	BENCHMARK("insert vertices") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		REQUIRE(g.order() == order);
+	}
+	BENCHMARK("insert self-edges") {
+		G g;
+		auto v = g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i)
+			g.insert_edge(v, v);
+		REQUIRE(g.size() == size);
+	}
+	BENCHMARK("insert random edges") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i) {
+			auto u = g.random_vert(r), v = g.random_vert(r);
+			g.insert_edge(u, v);
+		}
+		REQUIRE(g.order() == order);
+		REQUIRE(g.size() == size);
+	}
+	BENCHMARK("query adjacencies") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i) {
+			auto u = g.random_vert(r), v = g.random_vert(r);
+			g.insert_edge(u, v);
+		}
+		std::size_t total_degrees = 0;
+		for (auto v : g.verts())
+			for (auto e : g.out_edges(v))
+				++total_degrees;
+		REQUIRE(g.order() == order);
+		REQUIRE(g.size() == size);
+		REQUIRE(total_degrees == size);
+	}
+	BENCHMARK("erase vertices") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < order; ++i)
+			g.erase_vert(g.random_vert(r));
+		REQUIRE(g.order() == 0);
+	}
+	BENCHMARK("erase edges") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i) {
+			auto u = g.random_vert(r), v = g.random_vert(r);
+			g.insert_edge(u, v);
+		}
+		for (std::size_t i = 0; i < size; ++i)
+			g.erase_edge(g.random_edge(r));
+		REQUIRE(g.size() == 0);
+	}
+}

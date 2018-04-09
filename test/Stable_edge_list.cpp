@@ -3,7 +3,7 @@
 
 #include "Graph_tester.hpp"
 
-SCENARIO("edge lists behave properly", "[Stable_edge_list]") {
+SCENARIO("stable edge lists behave properly", "[Stable_edge_list]") {
 	using G = graph::Stable_edge_list;
 	GIVEN("an empty graph") {
 		G g;
@@ -54,5 +54,36 @@ SCENARIO("edge lists behave properly", "[Stable_edge_list]") {
 			auto rg = g.reverse_view();
 			Graph_tester rgt{rg};
 		}
+	}
+}
+
+TEST_CASE("stable edge list", "[benchmark]") {
+	using G = graph::Stable_edge_list;
+	static const std::size_t order = 1000;
+	static const std::size_t size = 10000;
+	std::mt19937 r;
+	BENCHMARK("insert vertices") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		REQUIRE(g.order() == order);
+	}
+	BENCHMARK("insert self-edges") {
+		G g;
+		auto v = g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i)
+			g.insert_edge(v, v);
+		REQUIRE(g.size() == size);
+	}
+	BENCHMARK("insert random edges") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i) {
+			auto u = g.random_vert(r), v = g.random_vert(r);
+			g.insert_edge(u, v);
+		}
+		REQUIRE(g.order() == order);
+		REQUIRE(g.size() == size);
 	}
 }

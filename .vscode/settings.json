@@ -5,13 +5,39 @@
 		"**/.hg": true,
 		"**/CVS": true,
 		"**/.DS_Store": true,
-		"extern": true,
-		"test/catch.hpp": true
+		"extern": true
 	},
 	"files.associations": {
 		"array": "cpp",
 		"functional": "cpp",
 		"tuple": "cpp",
-		"utility": "cpp"
+		"utility": "cpp",
+		"slist": "cpp",
+		"initializer_list": "cpp",
+		"cctype": "cpp",
+		"clocale": "cpp",
+		"cmath": "cpp",
+		"csignal": "cpp",
+		"cstdarg": "cpp",
+		"cstddef": "cpp",
+		"cstdio": "cpp",
+		"cstdlib": "cpp",
+		"cstring": "cpp",
+		"ctime": "cpp",
+		"cwchar": "cpp",
+		"cwctype": "cpp",
+		"atomic": "cpp",
+		"*.tcc": "cpp",
+		"chrono": "cpp",
+		"cstdint": "cpp",
+		"exception": "cpp",
+		"iosfwd": "cpp",
+		"limits": "cpp",
+		"new": "cpp",
+		"ratio": "cpp",
+		"stdexcept": "cpp",
+		"thread": "cpp",
+		"type_traits": "cpp",
+		"typeinfo": "cpp"
 	}
 }
