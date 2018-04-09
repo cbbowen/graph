@@ -10,6 +10,7 @@
 #include "map_iterator_wrapper.hpp"
 #include "tracker.hpp"
 #include "construct_fn.hpp"
+#include "exceptions.hpp"
 
 #define _GRAPH_ADJACENCY_LIST_MUTABLE_HACK 1
 #if _GRAPH_ADJACENCY_LIST_MUTABLE_HACK
@@ -96,7 +97,7 @@ namespace graph {
 #ifndef NDEBUG
 					for (auto e : edges())
 						if (_edge_cokey(e) == v && _edge_key(e) != v)
-							throw std::exception("precondition violated: bad edge adjacent to vertex");
+							throw precondition_unmet("bad edge adjacent to vertex");
 #endif
 					_esize -= _degree(v);
 					for (auto& m : _vmap_tracker.trackees())
