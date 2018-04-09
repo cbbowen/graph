@@ -79,6 +79,7 @@ SCENARIO("edge sets behave properly", "[Edge_list]") {
 	}
 }
 
+#ifdef GRAPH_BENCHMARK
 TEST_CASE("edge list", "[benchmark]") {
 	using G = graph::Edge_list;
 	static const std::size_t order = 1000;
@@ -129,3 +130,4 @@ TEST_CASE("edge list", "[benchmark]") {
 		REQUIRE(g.size() == 0);
 	}
 }
+#endif

@@ -178,6 +178,7 @@ SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list
 	}
 }
 
+#ifdef GRAPH_BENCHMARK
 TEST_CASE("stable adjacency list", "[benchmark]") {
 	using G = graph::Stable_out_adjacency_list;
 	static const std::size_t order = 1000;
@@ -224,3 +225,4 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 		REQUIRE(total_degrees == size);
 	}
 }
+#endif

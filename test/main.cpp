@@ -22,7 +22,6 @@ namespace std {
 #include <iostream>
 struct wait_on_end {
 	~wait_on_end() {
-		//std::cout << _LIBCPPABI_VERSION << std::endl;
 		std::cout << "Press ENTER to continue." << std::endl;
 		std::cin.get();
 	}

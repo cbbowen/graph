@@ -43,8 +43,10 @@ LIBS =
 
 # OPTION: Change flags for different configurations
 DEBUGFLAGS = -g -O0
-RELEASEFLAGS = -O2 -DNDEBUG
-PROFILEFLAGS = -g $(RELEASEFLAGS)
+RELEASEFLAGS = -O2 -DNDEBUG -DGRAPH_BENCHMARK
+PROFILEFLAGS = -g $(RELEASEFLAGS) -DGRAPH_BENCHMARK
+#COVERAGEFLAGS = -fprofile-arcs -ftest-coverage --coverage # For gcov
+COVERAGEFLAGS = -fprofile-instr-generate -fcoverage-mapping # For llvm-cov
 
 ###########
 ## Paths ##
@@ -64,7 +66,7 @@ ALLBUILDDIR ?= build
 
 # Default to the debug configuration
 # Note: everything before this must be configuration agnostic
-CONFIG ?= debug
+CONFIG ?= release
 
 # Build directory
 BUILDDIR = $(ALLBUILDDIR)/$(CONFIG)
@@ -89,6 +91,8 @@ else ifeq ($(CONFIG),release)
 	CONFIGFLAGS = $(RELEASEFLAGS)
 else ifeq ($(CONFIG),profile)
 	CONFIGFLAGS = $(PROFILEFLAGS)
+else ifeq ($(CONFIG),coverage)
+	CONFIGFLAGS = $(COVERAGEFLAGS)
 endif
 
 # Add the config flags to the compiler flags
@@ -160,6 +164,12 @@ else ifeq ($(CONFIG),release)
 else ifeq ($(CONFIG),profile)
 	$(PROFILER) $(OUTPUT)
 	$(PROFILE_ANALYZER) $(PROFILEOUTPUT)
+else ifeq ($(CONFIG),coverage)
+	$(OUTPUT)
+	mkdir -p $(BUILDDIR)
+	mv default.profraw $(BUILDDIR)
+	llvm-profdata merge $(BUILDDIR)/default.profraw -o $(BUILDDIR)/default.profdata
+	llvm-cov show $(OUTPUT) -format=html -output-dir=$(BUILDDIR) -instr-profile=$(BUILDDIR)/default.profdata ../include
 else
 	$(warning No run command for configuration $(CONFIG))
 endif
