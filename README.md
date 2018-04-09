@@ -34,7 +34,7 @@ This library firmly embraces the philosophy that you only pay for what you use. 
 
 By using a trait-driven implementation, everything is kept header-only and generic.  If your use case requires a specialized data structure, you need only implement the appropriate traits and all the algorithms implemented immediately become available.
 
-This doesn't mean you should usually need to do so, of course.  This library provides multiple data-structures out of the box and more are on the way.
+This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.
 
 | Graphs                      | Removals | Query Outgoing | Query Incoming |
 | ---------------------------:|:--------:|:--------------:|:--------------:|
@@ -44,3 +44,12 @@ This doesn't mean you should usually need to do so, of course.  This library pro
 | `Stable_in_adjacency_list`  | -        | -              | ✓              |
 | `Edge_list`                 | ✓        | -              | -              |
 | `Stable_edge_list`          | -        | -              | -              |
+
+A `Graph` has associated data types `Vert` and `Edge` representing vertices and edges respectively.  These are `EqualityComparable`, `LessThanComparable`, and `CopyAssignable`.  They also specialize `std::hash` and can be streamed to `std::basic_ostream<char>` for easy debugging.
+
+Given a `Graph` `g`, `Range`s over its vertices and edges are provided by `g.verts()` and `g.edges()`.  `g.null_vert()` and `g.null_edge()` are guaranteed to produce unique values that will not compare equal a vertex or edge in the graph.
+
+Given an `Edge` `e`, its tail (source) and head (target) are queried via `g.tail(e)` and `g.head(e)`.  Many graphs support insertion of vertices and edges through `g.insert_vert()` and `g.insert_edge(u,v)`.  Some of the graphs additionally support removal through `g.erase_vert(v)` and `g.erase_edge(e)`.  However, care must be taken as these may have preconditions.
+
+The real power of the library comes from `Vert_map`s and `Edge_map`s constructed through `g.vert_map<T>()` and `g.edge_map<T>()`.  These allow efficient mapping of vertices and edges to abitrary values, like vertex colors or edge weights.  Generally, the algorithms provided by the library simply expect `Callable`s to query these kinds of properties, which these types are.  However, vertex and edge maps are also writable via `operator[]`.
+(Users of Boost.Graph will likely already be familiar with this basic design, but it has been streamlined to avoid `boost::get`.)
