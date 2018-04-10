@@ -279,11 +279,22 @@ namespace graph {
 				}
 			};
 
+			template <template <class> class Adjacency>
+			struct _adjacency_helper;
+			template <> struct _adjacency_helper<Out_edges> {
+				template <class G> using _reverse = In_edges<G>;
+			};
+			template <> struct _adjacency_helper<In_edges> {
+				template <class G> using _reverse = Out_edges<G>;
+			};
+			template <template <class> class Adjacency, class G>
+			using Reverse_adjacency = typename _adjacency_helper<Adjacency>::template _reverse<G>;
+
 			template <class Trait>
-			struct _trait_key_helper;
+			struct _adjacency_trait_helper;
 
 			template <class G>
-			struct _trait_key_helper<Out_edges<G>> {
+			struct _adjacency_trait_helper<Out_edges<G>> {
 				using _edge_traits = Edges<G>;
 				using _edge_type = typename _edge_traits::value_type;
 				static decltype(auto) key(const G& g, const _edge_type& e) {
@@ -295,7 +306,7 @@ namespace graph {
 			};
 
 			template <class G>
-			struct _trait_key_helper<In_edges<G>> {
+			struct _adjacency_trait_helper<In_edges<G>> {
 				using _edge_traits = Edges<G>;
 				using _edge_type = typename _edge_traits::value_type;
 				static decltype(auto) key(const G& g, const _edge_type& e) {
@@ -308,12 +319,12 @@ namespace graph {
 
 			template <class Trait, class G, class E>
 			decltype(auto) trait_key(const G& g, E&& e) {
-				return _trait_key_helper<Trait>::key(g, std::forward<E>(e));
+				return _adjacency_trait_helper<Trait>::key(g, std::forward<E>(e));
 			}
 
 			template <class Trait, class G, class E>
 			decltype(auto) trait_cokey(const G& g, E&& e) {
-				return _trait_key_helper<Trait>::cokey(g, std::forward<E>(e));
+				return _adjacency_trait_helper<Trait>::cokey(g, std::forward<E>(e));
 			}
 		}
 	}

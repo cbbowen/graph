@@ -64,11 +64,12 @@ namespace graph {
 					return _map.try_emplace(k.key(), _default).first->second;
 				}
 				template <class U>
-				void assign(const key_type& k, U&& u) {
-					_map.insert_or_assign(k, std::forward<U>(u));
-					//if (auto [it, inserted] = _map.try_emplace(k, u); !inserted)
-					//	return std::exchange(*it, std::forward<U>(u));
-					//return _default;
+				T assign(const key_type& k, U&& u) {
+					// This would be better if we don't need to return the old value (maybe add an exchange method instead?)
+					//_map.insert_or_assign(k, std::forward<U>(u));
+					if (auto [it, inserted] = _map.emplace(k.key(), u); !inserted)
+						return std::exchange(it->second, std::forward<U>(u));
+					return _default;
 				}
 			protected:
 				T _default;

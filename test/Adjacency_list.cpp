@@ -219,6 +219,10 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 				REQUIRE(!(paths(g.tail(e)).first > paths(g.head(e)).first + weight(e)));
 			}
 		}
+		WHEN("searching for the minimum spanning tree") {
+			auto t = gt.random_vert(r);
+			auto tree = g.minimum_tree_reaching_to(t, [](auto e) { return 1; });
+		}
 	}
 }
 

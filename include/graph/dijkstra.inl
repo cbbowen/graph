@@ -34,7 +34,7 @@ namespace graph {
 				result[s].first = zero;
 				queue.emplace(zero, s);
 				while (!queue.empty()) {
-					auto[d, v] = queue.top();
+					auto [d, v] = queue.top();
 					queue.pop();
 					if (!closed.insert(v))
 						continue;

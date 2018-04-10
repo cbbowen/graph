@@ -9,6 +9,8 @@
 // Testing framework:
 // https://github.com/catchorg/Catch2
 
+#include <functional>
+
 #include "impl/traits.hpp"
 
 namespace graph {
@@ -145,7 +147,13 @@ namespace graph {
 			template <class Random>
 			Edge random_edge(Random& r) const;
 
+			/// Construct a view of this graph as its reverse, with reversed edge tails and heads.
 			auto reverse_view() const;
+
+			/// Construct a new view of this graph as an empty subforest with edges up to roots.
+			auto out_subforest() const;
+			/// Construct a new view of this graph as an empty subforest with edges down to leaves.
+			auto in_subforest() const;
 
 			template <class... Args>
 			auto dot_format(Args&&...) const;
@@ -229,6 +237,9 @@ namespace graph {
 
 			auto reverse_view() const;
 			// auto scc() const;
+
+			template <class WM, class Compare = std::less<>>
+			auto minimum_tree_reachable_from(const Vert& s, const WM& weight, const Compare& compare = {}) const;
 		};
 
 		template <class Impl>
@@ -257,6 +268,9 @@ namespace graph {
 
 			auto reverse_view() const;
 			// auto scc() const;
+
+			template <class WM, class Compare = std::less<>>
+			auto minimum_tree_reaching_to(const Vert& t, const WM& weight, const Compare& compare = {}) const;
 		};
 
 		template <class Impl>
@@ -289,5 +303,6 @@ namespace graph {
 #include "dijkstra.inl"
 #include "random.inl"
 #include "reverse.inl"
+#include "subforest.inl"
 //#include "scc.inl"
 #include "format.inl"
