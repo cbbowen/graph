@@ -95,6 +95,10 @@ namespace graph {
 					_edges.assign(k, null_edge());
 				}
 
+				bool is_root(const Vert& v) const {
+					return _edges(v) == null_edge();
+				}
+
 			protected:
 				using _Degree_type = int;
 				auto _key_edge_or_null(const Vert& v) const {
