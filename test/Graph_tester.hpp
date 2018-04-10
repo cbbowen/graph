@@ -25,17 +25,54 @@ struct Graph_tester {
 		for (auto v : g.verts()) {
 			// all verts are unique
 			REQUIRE(vm(v) == g.null_vert());
-			vm[v] = v;
+			auto _v = vm.exchange(v, v);
+			REQUIRE(_v == g.null_vert());
 			vs.insert(v);
 		}
 		// prepare edge map
 		for (auto e : g.edges()) {
 			// all edges are unique
 			REQUIRE(em(e) == g.null_edge());
-			em[e] = e;
+			auto _e = em.exchange(e, e);
+			REQUIRE(_e == g.null_edge());
 			es.insert(e);
 		}
 		require_invariants();
+
+		// test map reassignment
+		for (auto v : g.verts())
+			vm.assign(v, v);
+		for (auto e : g.edges())
+			em.assign(e, e);
+		
+		// test map exchange
+		for (auto v : g.verts()) {
+			auto _v = vm.exchange(v, v);
+			REQUIRE(_v == v);
+		}
+		for (auto e : g.edges()) {
+			auto _e = em.exchange(e, e);
+			REQUIRE(_e == e);
+		}
+
+		// test maps on values with destructors
+		struct destructible {
+			~destructible(){ ++destroyed.get(); }
+			std::reference_wrapper<std::size_t> destroyed;
+		};
+		std::size_t v_destroyed = 0, e_destroyed = 0;
+		{
+			std::size_t ignore_destroyed = 0;
+			auto dvm = g.vert_map(destructible{ignore_destroyed});
+			for (auto v : g.verts())
+				dvm[v] = destructible{v_destroyed};
+			auto dem = g.edge_map(destructible{ignore_destroyed});
+			for (auto e : g.edges())
+				dem[e] = destructible{e_destroyed};
+		}
+		REQUIRE(v_destroyed >= g.order());
+		REQUIRE(e_destroyed >= g.size());
+
 		// test ephemeral sets and maps here because there isn't a better place without slowing down tests too much
 		auto _vm = g.ephemeral_vert_map(g.null_vert());
 		auto _vs = g.ephemeral_vert_set();
@@ -61,6 +98,7 @@ struct Graph_tester {
 			REQUIRE(_es.contains(e));
 		}
 		REQUIRE(_es.size() == g.size());
+
 		// test streaming operator
 		std::set<std::string> vnames, enames;
 		for (auto v : g.verts()) {

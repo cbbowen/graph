@@ -97,7 +97,7 @@ namespace graph {
 				}
 				auto insert_vert() {
 					return Vert{_vlist.emplace_hint(_vlist.end(), _vlast++, _elist_type{})};
-				}
+				} // LCOV_EXCL_LINE (unreachable)
 				// precondition: `v` must be unreachable from other vertices
 				void erase_vert(const Vert& v) {
 #ifndef NDEBUG
@@ -170,7 +170,11 @@ namespace graph {
 					}
 					template <class U>
 					void assign(const Edge& e, U&& u) {
-						_map.assign(e, std::forward<U>(u));
+						_map.assign(e.second, std::forward<U>(u));
+					}
+					template <class U>
+					T exchange(const Edge& e, U&& u) {
+						return _map.exchange(e.second, std::forward<U>(u));
 					}
 					void _erase(const Edge& e) override {
 						_map._erase(e.second);
@@ -202,7 +206,11 @@ namespace graph {
 					}
 					template <class U>
 					void assign(const Edge& e, U&& u) {
-						_map.assign(e, std::forward<U>(u));
+						_map.assign(e.second, std::forward<U>(u));
+					}
+					template <class U>
+					T exchange(const Edge& e, U&& u) {
+						return _map.exchange(e.second, std::forward<U>(u));
 					}
 				private:
 					ephemeral_map_iterator_map<_Edge, T> _map;

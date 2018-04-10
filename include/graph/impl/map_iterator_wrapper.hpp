@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <unordered_map>
 #include <iterator>
 #include <tuple>
@@ -64,9 +65,14 @@ namespace graph {
 					return _map.try_emplace(k.key(), _default).first->second;
 				}
 				template <class U>
-				T assign(const key_type& k, U&& u) {
-					// This would be better if we don't need to return the old value (maybe add an exchange method instead?)
+				void assign(const key_type& k, U&& u) {
+					// This would be better, but is not yet in the MSVC standard library
 					//_map.insert_or_assign(k, std::forward<U>(u));
+					if (auto [it, inserted] = _map.emplace(k.key(), u); !inserted)
+						it->second = std::forward<U>(u);
+				}
+				template <class U>
+				T exchange(const key_type& k, U&& u) {
 					if (auto [it, inserted] = _map.emplace(k.key(), u); !inserted)
 						return std::exchange(it->second, std::forward<U>(u));
 					return _default;

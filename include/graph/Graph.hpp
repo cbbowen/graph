@@ -82,7 +82,7 @@ namespace graph {
 			template <class T>
 			Vert_map<T> vert_map(T default_ = {}) const {
 				return Verts::map(this->_impl(), std::move(default_));
-			}
+			} // LCOV_EXCL_LINE (unreachable)
 			template <class T> using Ephemeral_vert_map =
 				typename Verts::template ephemeral_map_type<T>;
 			template <class T>
@@ -122,7 +122,7 @@ namespace graph {
 			template <class T>
 			Edge_map<T> edge_map(T default_ = {}) const {
 				return Edges::map(this->_impl(), std::move(default_));
-			}
+			} // LCOV_EXCL_LINE (unreachable)
 			template <class T> using Ephemeral_edge_map =
 				typename Edges::template ephemeral_map_type<T>;
 			template <class T>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <limits>
 #include <vector>
 #include <ostream>
@@ -56,7 +57,11 @@ namespace graph {
 					return _map[i];
 				}
 				template <class U>
-				T assign(const key_type& k, U&& u) {
+				void assign(const key_type& k, U&& u) {
+					(*this)[k] = std::forward<U>(u);
+				}
+				template <class U>
+				T exchange(const key_type& k, U&& u) {
 					return std::exchange((*this)[k], std::forward<U>(u));
 				}
 			private:
@@ -87,7 +92,11 @@ namespace graph {
 					return _map[i];
 				}
 				template <class U>
-				T assign(const key_type& k, U&& u) {
+				void assign(const key_type& k, U&& u) {
+					(*this)[k] = std::forward<U>(u);
+				}
+				template <class U>
+				T exchange(const key_type& k, U&& u) {
 					return std::exchange((*this)[k], std::forward<U>(u));
 				}
 			private:
@@ -113,7 +122,7 @@ namespace graph {
 				}
 				bool insert(const key_type& k) {
 					// If it's already there, nothing else to do
-					if (_bitmap.assign(k, true))
+					if (_bitmap.exchange(k, true))
 						return false;
 					_container.push_back(k);
 					return true;
@@ -121,7 +130,7 @@ namespace graph {
 				// TODO: `erase`, `clear`, `begin`, and `end` are experimental
 				bool erase(const key_type& k) const {
 					// TODO: This implementation is O(n)
-					if (_bitmap.assign(k, false)) {
+					if (_bitmap.exchange(k, false)) {
 						_container.erase(std::find(_container.begin(), _container.end(), k));
 						return true;
 					}

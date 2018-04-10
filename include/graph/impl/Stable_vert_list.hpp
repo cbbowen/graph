@@ -32,7 +32,7 @@ namespace graph {
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(std::move(default_));
-				}
+				} // LCOV_EXCL_LINE (unreachable)
 				template <class T>
 				using Ephemeral_vert_map = ephemeral_contiguous_map<Vert, T>;
 				template <class T>

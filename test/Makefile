@@ -45,7 +45,7 @@ LIBS =
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O2 -DNDEBUG -DGRAPH_BENCHMARK
 PROFILEFLAGS = -g $(RELEASEFLAGS) -DGRAPH_BENCHMARK
-GCOVFLAGS = -fprofile-arcs -ftest-coverage --coverage # For gcov
+GCOVFLAGS = -g -O0 -fprofile-arcs -ftest-coverage --coverage # For gcov
 LLVMCOVFLAGS = -fprofile-instr-generate -fcoverage-mapping # For llvm-cov
 
 ###########

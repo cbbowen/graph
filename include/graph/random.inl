@@ -14,7 +14,7 @@ namespace graph {
 	inline namespace v1 {
 		namespace impl {
 			template <class Range, class Size, class Random>
-			auto sample_one(Range&& range, Size size, Random& random) {
+			auto sample_one(Range&& range, const Size& size, Random& random) {
 #ifndef NDEBUG
 				if (size <= 0)
 					throw precondition_unmet("size must be positive");
@@ -37,7 +37,7 @@ namespace graph {
 					if (!std::uniform_int_distribution<size_type>(0, n++)(random))
 						a = b;
 				return a;
-			}
+			} // LCOV_EXCL_LINE (unreachable)
 		}
 		template <class Impl>
 		template <class Random>
