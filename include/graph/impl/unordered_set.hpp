@@ -12,20 +12,21 @@ namespace graph {
 				using _map_type = std::unordered_set<Key, Hasher>;
 				using key_type = typename _map_type::key_type;
 				using iterator = typename _map_type::const_iterator;
+				auto size() const {
+					return _map.size();
+				}
 				bool contains(const key_type& k) const {
 					return _map.find(k) != _map.end();
 				}
 				bool insert(const key_type& k) {
 					return _map.insert(k).second;
 				}
+				// TODO: `erase`, `clear`, `begin`, and `end` are experimental
 				bool erase(const key_type& k) {
 					return _map.erase(k);
 				}
 				void clear() {
 					_map.clear();
-				}
-				auto size() const {
-					return _map.size();
 				}
 				iterator begin() const {
 					return _map.begin();

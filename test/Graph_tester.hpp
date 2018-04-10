@@ -63,10 +63,16 @@ struct Graph_tester {
 		REQUIRE(_es.size() == g.size());
 		// test streaming operator
 		std::set<std::string> vnames, enames;
-		for (auto v : g.verts())
-			REQUIRE(vnames.insert((std::stringstream() << v).str()).second);
-		for (auto e : g.edges())
-			REQUIRE(enames.insert((std::stringstream() << e).str()).second);
+		for (auto v : g.verts()) {
+			std::stringstream ss;
+			ss << v;
+			REQUIRE(vnames.insert(ss.str()).second);
+		}
+		for (auto e : g.edges()) {
+			std::stringstream ss;
+			ss << e;
+			REQUIRE(enames.insert(ss.str()).second);
+		}
 	}
 	void require_vert_invariants() const {
 		for (auto v : g.verts()) {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <type_traits>
 
 namespace graph {
 	inline namespace v1 {
@@ -41,9 +42,9 @@ namespace graph {
 				template <class Char, class Char_traits>
 				friend decltype(auto) operator>>(std::basic_istream<Char, Char_traits>& is, const Dot_format& self) {
 					static_assert(sizeof...(Args) == 0, "attributes are not yet supported");
-					using Verts = traits::Insert_verts<std::reference_wrapper<G>>;
-					using Edges = traits::Insert_edges<std::reference_wrapper<G>>;
-					self.g.get().clear();
+					using Verts = traits::Insert_verts<G>;
+					using Edges = traits::Insert_edges<G>;
+					self._g.get().clear();
 					std::map<std::string, typename Verts::value_type> vm;
 					std::string token;
 					is >> token;
@@ -56,8 +57,8 @@ namespace graph {
 						throw std::runtime_error("expected '{'");
 					auto token_v = [&]() {
 						auto it = vm.lower_bound(token);
-						if (it->first != token)
-							it = vm.try_emplace(it, std::move(token), Verts::insert(self.g));
+						if (it == vm.end() || it->first != token)
+							it = vm.try_emplace(it, std::move(token), Verts::insert(self._g));
 						return it->second;
 					};
 					while (is >> token, token != "}") {
@@ -67,7 +68,7 @@ namespace graph {
 								throw std::runtime_error("expected ';' or '->'");
 							is >> token;
 							auto u = token_v();
-							Edges::insert(self.g, std::move(v), u);
+							Edges::insert(self._g, std::move(v), u);
 							v = std::move(u);
 						}
 					}
@@ -87,8 +88,7 @@ namespace graph {
 				template <class Tag, class Char, class Char_traits, class K, std::size_t... I>
 				void output_attributes(std::basic_ostream<Char, Char_traits>& os, const K& k, std::index_sequence<I...>) const {
 					// This condition is just an optimization and not require for correctness.
-					// TODO: We could further check (at compile time) if any of the argument have a matching tag.
-					if constexpr (sizeof...(Args) > 0) {
+					if constexpr (std::disjunction_v<std::is_same<Tag, typename Args::tag>...>) {
 						bool any = false;
 						((any = output_attribute<Tag>(os, k, std::get<I>(args), any)() || any), ...);
 						if (any)
@@ -100,28 +100,28 @@ namespace graph {
 					output_attributes<Tag>(os, k, std::index_sequence_for<Args...>{});
 				}
 			protected:
-				std::reference_wrapper<G> g;
+				std::reference_wrapper<G> _g;
 				std::tuple<Args...> args;
 			public:
 				Dot_format(G& g, Args&&... args) :
-					g(g), args(std::forward<Args>(args)...) {
+					_g(g), args(std::forward<Args>(args)...) {
 				}
 				template <class Char, class Char_traits>
 				friend decltype(auto) operator<<(std::basic_ostream<Char, Char_traits>& os, const Dot_format& self) {
 					using Verts = traits::Verts<std::reference_wrapper<G>>;
 					using Edges = traits::Edges<std::reference_wrapper<G>>;
 					using Order = typename Verts::size_type;
-					auto vm = Verts::map(self.g, Order{});
+					auto vm = Verts::map(self._g, Order{});
 					os << "digraph g {\n";
 					Order i = 0;
-					for (auto v : Verts::range(self.g)) {
+					for (auto v : Verts::range(self._g)) {
 						os << '\t' << (vm[v] = i++);
 						self.output_attributes<vert_attribute_tag>(os, v);
 						os << " ;\n";
 					}
-					for (auto e : Edges::range(self.g)) {
-						os << '\t' << vm(Edges::tail(self.g, e))
-							<< " -> " << vm(Edges::head(self.g, e));
+					for (auto e : Edges::range(self._g)) {
+						os << '\t' << vm(Edges::tail(self._g, e))
+							<< " -> " << vm(Edges::head(self._g, e));
 						self.output_attributes<edge_attribute_tag>(os, e);
 						os << " ;\n";
 					}

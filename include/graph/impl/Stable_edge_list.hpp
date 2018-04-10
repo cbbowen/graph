@@ -53,10 +53,11 @@ namespace graph {
 				auto edge_set() const {
 					return Edge_set();
 				}
-				// TODO: This can be made more efficient by using an Ephemeral_edge_map<bool>
-				using Ephemeral_edge_set = Edge_set;
+				//using Ephemeral_edge_set = Edge_set;
+				using Ephemeral_edge_set = ephemeral_contiguous_set<Edge>;
 				auto ephemeral_edge_set() const {
-					return edge_set();
+					//return edge_set();
+					return Ephemeral_edge_set(size());
 				}
 			private:
 				std::vector<std::pair<Vert, Vert>> _elist;

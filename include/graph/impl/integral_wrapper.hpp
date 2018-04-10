@@ -13,7 +13,8 @@ namespace graph {
 					assert(i != std::numeric_limits<I>::max());
 				}
 				constexpr integral_wrapper() :
-					_i(std::numeric_limits<I>::max()) {}
+					_i(std::numeric_limits<I>::max()) {
+				}
 #define GRAPH_V1_DETAIL_INTEGRAL_WRAPPER_DEFINE_OP(OP) \
 				constexpr bool operator OP(const integral_wrapper& other) const \
 				{ return _i OP other._i; }
@@ -55,8 +56,8 @@ namespace graph {
 					return _map[i];
 				}
 				template <class U>
-				void assign(const key_type& k, U&& u) {
-					(*this)[k] = std::forward<U>(u);
+				T assign(const key_type& k, U&& u) {
+					return std::exchange((*this)[k], std::forward<U>(u));
 				}
 			private:
 				_container_type _map;
@@ -86,12 +87,60 @@ namespace graph {
 					return _map[i];
 				}
 				template <class U>
-				void assign(const key_type& k, U&& u) {
-					(*this)[k] = std::forward<U>(u);
+				T assign(const key_type& k, U&& u) {
+					return std::exchange((*this)[k], std::forward<U>(u));
 				}
 			private:
 				T _default;
 				_container_type _map;
+			};
+			template <class K>
+			struct ephemeral_contiguous_set;
+			template <class I, class Tag>
+			struct ephemeral_contiguous_set<integral_wrapper<I, Tag>> {
+				using int_type = I;
+				using key_type = integral_wrapper<I, Tag>;
+				using _container_type = std::vector<key_type>;
+				using iterator = typename _container_type::iterator;
+				ephemeral_contiguous_set(std::size_t size) :
+					_bitmap(size, false) {
+				}
+				auto size() const {
+					return _container.size();
+				}
+				bool contains(const key_type& k) const {
+					return _bitmap(k);
+				}
+				bool insert(const key_type& k) {
+					// If it's already there, nothing else to do
+					if (_bitmap.assign(k, true))
+						return false;
+					_container.push_back(k);
+					return true;
+				}
+				// TODO: `erase`, `clear`, `begin`, and `end` are experimental
+				bool erase(const key_type& k) const {
+					// TODO: This implementation is O(n)
+					if (_bitmap.assign(k, false)) {
+						_container.erase(std::find(_container.begin(), _container.end(), k));
+						return true;
+					}
+					return false;
+				}
+				void clear() {
+					for (auto k : _container)
+						_bitmap[k] = false;
+					_container.clear();
+				}
+				iterator begin() const {
+					return _container.begin();
+				}
+				iterator end() const {
+					return _container.end();
+				}
+			private:
+				ephemeral_contiguous_map<key_type, char> _bitmap; // Why is this `char` instead of `bool`?  `std::vector<bool>`, that's why.
+				_container_type _container;
 			};
 		}
 	}

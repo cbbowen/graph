@@ -65,7 +65,10 @@ namespace graph {
 				}
 				template <class U>
 				void assign(const key_type& k, U&& u) {
-					_map.assign(k, std::forward<U>(u));
+					_map.insert_or_assign(k, std::forward<U>(u));
+					//if (auto [it, inserted] = _map.try_emplace(k, u); !inserted)
+					//	return std::exchange(*it, std::forward<U>(u));
+					//return _default;
 				}
 			protected:
 				T _default;
