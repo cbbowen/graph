@@ -45,8 +45,8 @@ LIBS =
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O2 -DNDEBUG -DGRAPH_BENCHMARK
 PROFILEFLAGS = -g $(RELEASEFLAGS) -DGRAPH_BENCHMARK
-#COVERAGEFLAGS = -fprofile-arcs -ftest-coverage --coverage # For gcov
-COVERAGEFLAGS = -fprofile-instr-generate -fcoverage-mapping # For llvm-cov
+GCOVFLAGS = -fprofile-arcs -ftest-coverage --coverage # For gcov
+LLVMCOVFLAGS = -fprofile-instr-generate -fcoverage-mapping # For llvm-cov
 
 ###########
 ## Paths ##
@@ -91,8 +91,10 @@ else ifeq ($(CONFIG),release)
 	CONFIGFLAGS = $(RELEASEFLAGS)
 else ifeq ($(CONFIG),profile)
 	CONFIGFLAGS = $(PROFILEFLAGS)
-else ifeq ($(CONFIG),coverage)
-	CONFIGFLAGS = $(COVERAGEFLAGS)
+else ifeq ($(CONFIG),gcov)
+	CONFIGFLAGS = $(GCOVFLAGS)
+else ifeq ($(CONFIG),llvm-cov)
+	CONFIGFLAGS = $(LLVMCOVFLAGS)
 endif
 
 # Add the config flags to the compiler flags
@@ -164,9 +166,13 @@ else ifeq ($(CONFIG),release)
 else ifeq ($(CONFIG),profile)
 	$(PROFILER) $(OUTPUT)
 	$(PROFILE_ANALYZER) $(PROFILEOUTPUT)
-else ifeq ($(CONFIG),coverage)
+else ifeq ($(CONFIG),gcov)
 	$(OUTPUT)
-	mkdir -p $(BUILDDIR)
+	lcov --base-directory $(shell pwd) --directory $(OBJDIR) --gcov-tool llvm-gcov.sh --capture --output-file $(BUILDDIR)/unfiltered.info
+	lcov --extract $(BUILDDIR)/unfiltered.info $(shell readlink -f ../include)/\* -o $(BUILDDIR)/coverage.info
+	genhtml $(BUILDDIR)/coverage.info -o $(BUILDDIR)
+else ifeq ($(CONFIG),llvm-cov)
+	$(OUTPUT)
 	mv default.profraw $(BUILDDIR)
 	llvm-profdata merge $(BUILDDIR)/default.profraw -o $(BUILDDIR)/default.profdata
 	llvm-cov show $(OUTPUT) -format=html -output-dir=$(BUILDDIR) -instr-profile=$(BUILDDIR)/default.profdata ../include
