@@ -38,7 +38,7 @@ By using a trait-driven implementation, everything is kept header-only and gener
 
 This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.
 
-| Graphs                      | Removals | Query Outgoing | Query Incoming |
+| Data Structure              | Removals | Query Outgoing | Query Incoming |
 | ---------------------------:|:--------:|:--------------:|:--------------:|
 | `Out_adjacency_list`        | ✓        | ✓              | -              |
 | `In_adjacency_list`         | ✓        | -              | ✓              |
@@ -47,11 +47,47 @@ This doesn't mean you should usually need to do so, of course.  This library pro
 | `Edge_list`                 | ✓        | -              | -              |
 | `Stable_edge_list`          | -        | -              | -              |
 
-A `Graph` has associated data types `Vert` and `Edge` representing vertices and edges respectively.  These are `EqualityComparable`, `LessThanComparable`, and `CopyAssignable`.  They also specialize `std::hash` and can be streamed to `std::basic_ostream<char>` for easy debugging.
+| Concept                  | Member                                          | Semantics
+|:------------------------ |:----------------------------------------------- |:----------
+| `Graph`                  | `Vert : EqualityComparable, LessThanComparable, Hashable` | Vertex
+|                          | `verts() const ⟶ Range<Vert>`                  | Range over all vertices
+|                          | `null_vert() const ⟶ Vert`                     | Unique vertex which will never comparable equal to one in the graph
+|                          | `order() const ⟶ unsigned`                     | `size(verts())`
+|                          | `vert_map<T>(T d = {}) ⟶ Map<Vert, T>`         | New map from vertices to `d`
+|                          | `vert_set() ⟶ Set<Vert>`                       | New empty set of vertices
+|                          | `Edge : EqualityComparable, LessThanComparable, Hashable`  | Edge
+|                          | `edges() const ⟶ Range<Edge>`                  | Range over all edges
+|                          | `null_edge() const ⟶ Edge`                     | Unique edge which will never comparable equal to one in the graph
+|                          | `tail(Edge e) const ⟶ Vert`                    | Tail (or source) of `e`
+|                          | `head(Edge e) const ⟶ Vert`                    | Head (or target) of `e`
+|                          | `size() const ⟶ unsigned`                      | `size(edges())`
+|                          | `edge_map<T>(T d = {}) ⟶ Map<Edge, T>`         | New map from edges to `d`
+|                          | `edge_set() ⟶ Set<Edge>`                       | New empty set of edges
+|                          | * `ephemeral_vert_map<T>(T d = {}) ⟶ Map<Vert, T>`| New map from vertices to `d` — changing the graph during the lifetime of an ephemeral object is undefined beahavior
+|                          | * `ephemeral_vert_set() ⟶ Set<Vert>`              | New empty set of vertices — changing the graph during the lifetime of an ephemeral object is undefined beahavior
+|                          | * `ephemeral_edge_map<T>(T d = {}) ⟶ Map<Edge, T>`| New map from edges to `d` — changing the graph during the lifetime of an ephemeral object is undefined beahavior
+|                          | * `ephemeral_edge_set() ⟶ Set<Edge>`              | New empty set of edges — changing the graph during the lifetime of an ephemeral object is undefined beahavior
+| `Out_edge_graph : Graph` | `out_edges(Vert) const ⟶ Range<Edge>`          | Range over all edges with a given tail
+|                          | `out_degree(Vert v) const ⟶ unsigned`          | `size(out_edges(v))`
+| `In_edge_graph : Graph`| `in_edges(Vert) const ⟶ Range<Edge>`  | Range over all edges with a given head
+|                          | `in_degree(Vert v) const ⟶ unsigned`           | `size(in_edges(v))`
+| `Set<K> : Range<K>`| `contains(K k) const ⟶ bool`              | Check if set contains `k`
+|                          | `size() const ⟶ unsigned`                      | Size of set
+|                          | `insert(K k) ⟶ bool`                           | Insert `k` if it is not in the set, and return indicating if it was inserted
+|                          | ** `erase(K k) ⟶ bool`                         | Remove `k` if it is in the set, and return indicating if it was removed
+|                          | ** `clear()`                                    | Make the set empty
+| `Map<K,T>`               | `operator()(K k) const ⟶ const T&`             | Read-only value associated with `k`
+|                          | `operator[](K k) ⟶ T&`                         | Writable value associated with `k`
+|                          | ** `assign(K k, T t)`                           | Associate `t` with `k`
+|                          | ** `exchange(K k, T t) ⟶ T`                    | Associate `t` with `k` and return the old value
 
-Given a `Graph` `g`, `Range`s over its vertices and edges are provided by `g.verts()` and `g.edges()`.  `g.null_vert()` and `g.null_edge()` are guaranteed to produce unique values that will not compare equal a vertex or edge in the graph.
+\* Advanced API that should be avoided except when performance is important or in generic code.
 
-Given an `Edge` `e`, its tail (source) and head (target) are queried via `g.tail(e)` and `g.head(e)`.  Many graphs support insertion of vertices and edges through `g.insert_vert()` and `g.insert_edge(u,v)`.  Some of the graphs additionally support removal through `g.erase_vert(v)` and `g.erase_edge(e)`.  However, care must be taken as these may have preconditions.
+\** Experimental API that may change without notice.
 
-The real power of the library comes from `Vert_map`s and `Edge_map`s constructed through `g.vert_map<T>()` and `g.edge_map<T>()`.  These allow efficient mapping of vertices and edges to abitrary values, like vertex colors or edge weights.  Generally, the algorithms provided by the library simply expect `Callable`s to query these kinds of properties, which these types are.  However, vertex and edge maps are also writable via `operator[]`.
-(Users of Boost.Graph will likely already be familiar with this basic design, but it has been streamlined to avoid `boost::get`.)
+| Algorithm                  | Usage                                                    | Semantics
+| --------------------------:|:-------------------------------------------------------- |:----------
+| Dijkstra's                 | `out_graph.shortest_paths_from(v, weights, ...)`         | Finds the paths with minimum total edge `weights` from `v` to all other reachable vertices
+|                            | `in_graph.shortest_paths_to(v, weights, ...)`            | Finds the paths with minimum total edge `weights` to `v` from all verticies which can reach it
+| Prim's                     | `out_graph.minimum_tree_reachable_from(v, weights, ...)` | Finds the spanning tree with minimum total edge `weights` to all vertices reachable from `v`
+|                            | `in_graph.minimum_tree_reaching_to(v, weights, ...)`     | Finds the spanning tree with minimum total edge `weights` from all vertices from which `v` is reachable
