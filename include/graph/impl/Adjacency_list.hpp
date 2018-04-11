@@ -12,6 +12,7 @@
 #include "construct_fn.hpp"
 #include "exceptions.hpp"
 
+// Ideally, there would be a good way to get an iterator from const_iterator and a mutable container (better than a zero-length erase).  Since there is not, we have to make our container mutable so we can get iterators to it in const contexts.
 #define GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK 1
 #if GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK
 #	define GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR iterator
