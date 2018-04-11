@@ -111,12 +111,10 @@ SCENARIO("out-adjacency lists behave properly", "[Out_adjacency_list]") {
 		WHEN("searching for the minimum spanning tree") {
 			auto s = gt.random_vert(r);
 			auto tree = g.minimum_tree_reachable_from(s, [](auto e) { return 1; });
+			REQUIRE(tree.root() == s);
 			// If the tail of an edge is in the tree, then so must be the head
-			for (auto e : g.edges()) {
-				auto tail_in_tree = g.tail(e) == s || !tree.is_root(g.tail(e));
-				auto head_in_tree = g.head(e) == s || !tree.is_root(g.head(e));
-				REQUIRE((!tail_in_tree || head_in_tree));
-			}
+			for (auto e : g.edges())
+				REQUIRE((!tree.in_tree(g.tail(e)) || tree.in_tree(g.head(e))));
 		}
 	}
 }
@@ -232,12 +230,10 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 		WHEN("searching for the minimum spanning tree") {
 			auto t = gt.random_vert(r);
 			auto tree = g.minimum_tree_reaching_to(t, [](auto e) { return 1; });
+			REQUIRE(tree.root() == t);
 			// If the head of an edge is in the tree, then so must be the tail
-			for (auto e : g.edges()) {
-				auto head_in_tree = g.head(e) == t || !tree.is_root(g.head(e));
-				auto tail_in_tree = g.tail(e) == t || !tree.is_root(g.tail(e));
-				REQUIRE((!head_in_tree || tail_in_tree));
-			}
+			for (auto e : g.edges())
+				REQUIRE((!tree.in_tree(g.head(e)) || tree.in_tree(g.tail(e))));
 		}
 	}
 }

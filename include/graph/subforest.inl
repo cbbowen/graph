@@ -16,6 +16,16 @@ namespace graph {
 			using Subforest_impl = impl::Subforest<impl::traits::In_edges<Impl>>;
 			return Graph(Subforest_impl(this->_impl()));
 		}
+		template <class Impl>
+		auto Graph<Impl>::out_subtree(Vert root) const {
+			using Subtree_impl = impl::Subtree<impl::traits::Out_edges<Impl>>;
+			return Graph(Subtree_impl(this->_impl(), std::move(root)));
+		}
+		template <class Impl>
+		auto Graph<Impl>::in_subtree(Vert root) const {
+			using Subtree_impl = impl::Subtree<impl::traits::In_edges<Impl>>;
+			return Graph(Subtree_impl(this->_impl(), std::move(root)));
+		}
 		namespace impl {
 			// `Result_adjacency` determines whether the resulting tree spans vertices that can reach the vertex or can be reached _from_ the vertex.  This will generally by the reverse of the adjacency type supported by the underlying graph.
 			template <template <class> class Result_adjacency, class G, class WM, class Compare>
@@ -23,7 +33,7 @@ namespace graph {
 				using Verts = traits::Verts<G>;
 				using Edges = traits::Edges<G>;
 				using Graph_adjacencies = traits::Reverse_adjacency<Result_adjacency, G>;
-				auto forest = Subforest<Result_adjacency<G>>(g);
+				auto tree = Subtree<Result_adjacency<G>>(g, v);
 				auto closed = Verts::ephemeral_set(g);
 				using weight_type = std::decay_t<std::result_of_t<const WM&(typename Edges::value_type)>>;
 				using pair_type = std::pair<weight_type, Edge<G>>;
@@ -46,11 +56,11 @@ namespace graph {
 					queue.pop();
 					auto v = traits::trait_cokey<Graph_adjacencies>(g, e);
 					if (closed.insert(v)) {
-						forest.insert_edge(e);
+						tree.insert_edge(e);
 						enqueue_edges(v);
 					}
 				}
-				return forest;
+				return tree;
 			}
 		}
 		template <class Impl>

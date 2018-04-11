@@ -123,7 +123,7 @@ namespace graph {
 				typename Verts::template ephemeral_map_type<Edge> _edges;
 				typename Edges::size_type _size = 0;
 			};
-			template <class Adjacency>
+			template <class Adjacencies>
 			struct Subforest;
 			template <class G>
 			struct Subforest<traits::Out_edges<G>> :
@@ -168,6 +168,25 @@ namespace graph {
 					std::reverse(path.begin(), path.end());
 					return path;
 				}
+			};
+			template <class Adjacencies>
+			struct Subtree;
+			template <template <class> class Adjacency, class G>
+			struct Subtree<Adjacency<G>> : Subforest<Adjacency<G>> {
+				using _base_type = Subforest<Adjacency<G>>;
+				using Vert = typename _base_type::Vert;
+				Subtree(const G& g, Vert root) :
+					_base_type(g), _root(std::move(root)) {
+				}
+				Vert root() const {
+					return _root;
+				}
+				bool is_root(const Vert& v) const = delete;
+				bool in_tree(const Vert& v) {
+					return !_base_type::is_root(v) || v == root();
+				}
+			private:
+				Vert _root;
 			};
 			namespace traits {
 				// TODO: This should specialize Verts and Edges to avoid typedef repetition above
