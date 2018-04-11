@@ -232,5 +232,12 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 				++total_degrees;
 		REQUIRE(total_degrees == size);
 	}
+
+	BENCHMARK("find single-source shortest paths") {
+		auto weight = g.edge_map(0.0);
+		for (auto e : g.edges())
+			weight[e] = std::uniform_real_distribution<double>{}(r);
+		auto [tree, distances] = g.shortest_paths_from(g.random_vert(r), weight);
+	}
 }
 #endif
