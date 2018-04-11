@@ -9,7 +9,7 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <template <class> class Adjacency, class G>
+			template <class Adjacency, class G>
 			class _Subforest {
 				using Verts = traits::Verts<G>;
 				using Edges = traits::Edges<G>;
@@ -18,7 +18,6 @@ namespace graph {
 				using Order = typename Verts::size_type;
 				using Edge = typename Edges::value_type;
 				using Size = typename Edges::size_type;
-				using Adjacencies = Adjacency<G>;
 				_Subforest(const G& g) : _g(g),
 					_edges(_g.get().ephemeral_vert_map(_g.get().null_edge())) {
 				}
@@ -87,11 +86,11 @@ namespace graph {
 
 				void insert_edge(Edge e) {
 					// TODO: This should check for cycles in debug builds
-					auto k = traits::trait_key<Adjacencies>(_g, e);
+					auto k = traits::adjacency_key<Adjacency>(_g, e);
 					_edges.assign(k, std::move(e));
 				}
 				void erase_edge(const Edge& e) {
-					auto k = traits::trait_key<Adjacencies>(_g, e);
+					auto k = traits::adjacency_key<Adjacency>(_g, e);
 					_edges.assign(k, null_edge());
 				}
 
@@ -114,7 +113,7 @@ namespace graph {
 				std::vector<Edge> _key_path(Vert v) const {
 					std::vector<Edge> path;
 					for (Edge e; (e = _edges(v)) != null_edge(); path.push_back(e))
-						v = traits::trait_cokey<Adjacencies>(_g, e);
+						v = traits::adjacency_cokey<Adjacency>(_g, e);
 					return path;
 				}
 
@@ -123,18 +122,18 @@ namespace graph {
 				typename Verts::template ephemeral_map_type<Edge> _edges;
 				typename Edges::size_type _size = 0;
 			};
-			template <class Adjacencies>
+			template <class Adjacency, class G>
 			struct Subforest;
 			template <class G>
-			struct Subforest<traits::Out_edges<G>> :
-				_Subforest<traits::Out_edges, G> {
-				using _base_type = _Subforest<traits::Out_edges, G>;
+			struct Subforest<traits::Out, G> :
+				_Subforest<traits::Out, G> {
+				using _base_type = _Subforest<traits::Out, G>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using Out_degree = typename _base_type::_Degree_type;
+				using Out_degree = int; // 0 or 1
 				using _base_type::_base_type;
 				auto out_edge_or_null(const Vert& v) const {
-					return _key_edge_or_null(v);
+					return this->_key_edge_or_null(v);
 				}
 				auto out_edges(const Vert& v) const {
 					return this->_key_edges(v);
@@ -147,15 +146,15 @@ namespace graph {
 				}
 			};
 			template <class G>
-			struct Subforest<traits::In_edges<G>> :
-				_Subforest<traits::In_edges, G> {
-				using _base_type = _Subforest<traits::In_edges, G>;
+			struct Subforest<traits::In, G> :
+				_Subforest<traits::In, G> {
+				using _base_type = _Subforest<traits::In, G>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using In_degree = typename _base_type::_Degree_type;
+				using In_degree = int; // 0 or 1
 				using _base_type::_base_type;
 				auto in_edge_or_null(const Vert& v) const {
-					return _key_edge_or_null(v);
+					return this->_key_edge_or_null(v);
 				}
 				auto in_edges(const Vert& v) const {
 					return this->_key_edges(v);
@@ -169,11 +168,9 @@ namespace graph {
 					return path;
 				}
 			};
-			template <class Adjacencies>
-			struct Subtree;
-			template <template <class> class Adjacency, class G>
-			struct Subtree<Adjacency<G>> : Subforest<Adjacency<G>> {
-				using _base_type = Subforest<Adjacency<G>>;
+			template <class Adjacency, class G>
+			struct Subtree : Subforest<Adjacency, G> {
+				using _base_type = Subforest<Adjacency, G>;
 				using Vert = typename _base_type::Vert;
 				Subtree(const G& g, Vert root) :
 					_base_type(g), _root(std::move(root)) {

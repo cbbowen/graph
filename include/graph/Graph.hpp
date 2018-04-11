@@ -150,15 +150,19 @@ namespace graph {
 			/// Construct a view of this graph as its reverse, with reversed edge tails and heads.
 			auto reverse_view() const;
 
+			// Constructs a new view of this graph as an empty subforest.
+			template <class Adjacency> auto _subforest() const;
 			/// Construct a new view of this graph as an empty subforest with edges up to roots.
-			auto out_subforest() const;
+			auto out_subforest() const { return _subforest<impl::traits::Out_edges>(); }
 			/// Construct a new view of this graph as an empty subforest with edges down to leaves.
-			auto in_subforest() const;
+			auto in_subforest() const { return _subforest<impl::traits::In_edges>(); }
 
+			// Constructs a new view of this graph as an empty subtree.
+			template <class Adjacency> auto _subtree(Vert root) const;
 			/// Construct a new view of this graph as an empty tree with edges up to a given root.
-			auto out_subtree(Vert root) const;
+			auto out_subtree(Vert root) const { return _subtree<impl::traits::Out_edges>(); }
 			/// Construct a new view of this graph as an empty tree with edges down from a given root.
-			auto in_subtree(Vert root) const;
+			auto in_subtree(Vert root) const { return _subtree<impl::traits::In_edges>(); }
 
 			template <class... Args>
 			auto dot_format(Args&&...) const;

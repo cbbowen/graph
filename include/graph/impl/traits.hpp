@@ -279,52 +279,52 @@ namespace graph {
 				}
 			};
 
-			template <template <class> class Adjacency>
+			struct Out {};
+			struct In {};
+
+			template <class Adjacency>
 			struct _adjacency_helper;
-			template <> struct _adjacency_helper<Out_edges> {
-				template <class G> using _reverse = In_edges<G>;
-			};
-			template <> struct _adjacency_helper<In_edges> {
-				template <class G> using _reverse = Out_edges<G>;
-			};
-			template <template <class> class Adjacency, class G>
-			using Reverse_adjacency = typename _adjacency_helper<Adjacency>::template _reverse<G>;
+			template <> struct _adjacency_helper<Out> {
+				using reverse_adjacency = In;
+				template <class G> using adjacent_edges = Out_edges<G>;
 
-			template <class Trait>
-			struct _adjacency_trait_helper;
-
-			template <class G>
-			struct _adjacency_trait_helper<Out_edges<G>> {
-				using _edge_traits = Edges<G>;
-				using _edge_type = typename _edge_traits::value_type;
-				static decltype(auto) key(const G& g, const _edge_type& e) {
-					return _edge_traits::tail(g, e);
+				template <class G>
+				static decltype(auto) key(const G& g, const typename Edges<G>::value_type& e) {
+					return Edges<G>::tail(g, e);
 				}
-				static decltype(auto) cokey(const G& g, const _edge_type& e) {
-					return _edge_traits::head(g, e);
+				template <class G>
+				static decltype(auto) cokey(const G& g, const typename Edges<G>::value_type& e) {
+					return Edges<G>::head(g, e);
 				}
 			};
+			template <> struct _adjacency_helper<In> {
+				using reverse_adjacency = Out;
+				template <class G> using adjacent_edges = In_edges<G>;
 
-			template <class G>
-			struct _adjacency_trait_helper<In_edges<G>> {
-				using _edge_traits = Edges<G>;
-				using _edge_type = typename _edge_traits::value_type;
-				static decltype(auto) key(const G& g, const _edge_type& e) {
-					return _edge_traits::head(g, e);
+				template <class G>
+				static decltype(auto) key(const G& g, const typename Edges<G>::value_type& e) {
+					return Edges<G>::head(g, e);
 				}
-				static decltype(auto) cokey(const G& g, const _edge_type& e) {
-					return _edge_traits::tail(g, e);
+				template <class G>
+				static decltype(auto) cokey(const G& g, const typename Edges<G>::value_type& e) {
+					return Edges<G>::tail(g, e);
 				}
 			};
 
-			template <class Trait, class G, class E>
-			decltype(auto) trait_key(const G& g, E&& e) {
-				return _adjacency_trait_helper<Trait>::key(g, std::forward<E>(e));
+			template <class Adjacency>
+			using Reverse_adjacency = typename _adjacency_helper<Adjacency>::reverse_adjacency;
+
+			template <class Adjacency, class G>
+			using Adjacent_edges = typename _adjacency_helper<Adjacency>::template adjacent_edges<G>;
+
+			template <class Adjacency, class G, class E>
+			decltype(auto) adjacency_key(const G& g, E&& e) {
+				return _adjacency_helper<Adjacency>::key(g, std::forward<E>(e));
 			}
 
-			template <class Trait, class G, class E>
-			decltype(auto) trait_cokey(const G& g, E&& e) {
-				return _adjacency_trait_helper<Trait>::cokey(g, std::forward<E>(e));
+			template <class Adjacency, class G, class E>
+			decltype(auto) adjacency_cokey(const G& g, E&& e) {
+				return _adjacency_helper<Adjacency>::cokey(g, std::forward<E>(e));
 			}
 		}
 	}

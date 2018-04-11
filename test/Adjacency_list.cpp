@@ -95,18 +95,18 @@ SCENARIO("out-adjacency lists behave properly", "[Out_adjacency_list]") {
 			auto weight = g.edge_map(0.0);
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution<double>{}(r);
-			auto paths = g.shortest_paths_from(s, weight);
-			REQUIRE(paths(s).first == 0);
+			auto [tree, distances] = g.shortest_paths_from(s, weight);
+			REQUIRE(tree.root() == s);
+			REQUIRE(distances(s) == 0);
 			for (auto v : g.verts()) {
-				auto e = paths(v).second;
+				auto e = tree.in_edge_or_null(v);
 				if (e != g.null_edge()) {
 					REQUIRE(g.head(e) == v);
-					REQUIRE(paths(v).first == paths(g.tail(e)).first + weight(e));
+					REQUIRE(distances(v) == distances(g.tail(e)) + weight(e));
 				}
 			}
-			for (auto e : g.edges()) {
-				REQUIRE(!(paths(g.head(e)).first > paths(g.tail(e)).first + weight(e)));
-			}
+			for (auto e : g.edges())
+				REQUIRE(!(distances(g.head(e)) > distances(g.tail(e)) + weight(e)));
 		}
 		WHEN("searching for the minimum spanning tree") {
 			auto s = gt.random_vert(r);
@@ -214,18 +214,18 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 			auto weight = g.edge_map(0.0);
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution<double>{}(r);
-			auto paths = g.shortest_paths_to(t, weight);
-			REQUIRE(paths(t).first == 0);
+			auto [tree, distances] = g.shortest_paths_to(t, weight);
+			REQUIRE(tree.root() == t);
+			REQUIRE(distances(t) == 0);
 			for (auto v : g.verts()) {
-				auto e = paths(v).second;
+				auto e = tree.out_edge_or_null(v);
 				if (e != g.null_edge()) {
 					REQUIRE(g.tail(e) == v);
-					REQUIRE(paths(v).first == paths(g.head(e)).first + weight(e));
+					REQUIRE(distances(v) == distances(g.head(e)) + weight(e));
 				}
 			}
-			for (auto e : g.edges()) {
-				REQUIRE(!(paths(g.tail(e)).first > paths(g.head(e)).first + weight(e)));
-			}
+			for (auto e : g.edges())
+				REQUIRE(!(distances(g.tail(e)) > distances(g.head(e)) + weight(e)));
 		}
 		WHEN("searching for the minimum spanning tree") {
 			auto t = gt.random_vert(r);
