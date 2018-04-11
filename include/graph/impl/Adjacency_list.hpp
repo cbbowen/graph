@@ -39,13 +39,19 @@ namespace graph {
 				std::pair<std::hash<typename Pair::first_type>, std::hash<typename Pair::second_type>> _hashers;
 			};
 
+			template <class K, class T>
+			struct _stable_map : std::map<K, T> {
+				using _base_type = std::map<K, T>;
+				using _base_type::_base_type;
+			};
+			template <template <class, class> class _Map = _stable_map>
 			struct _Adjacency_list {
 				using Order = std::size_t;
 				using Size = std::size_t;
 				using _Degree = std::size_t;
 				struct _Vert; // work around the fact that Vert can't be defined yet
-				using _elist_type = std::map<Size, _Vert>;
-				using _vlist_type = std::map<Order, _elist_type>;
+				using _elist_type = _Map<Size, _Vert>;
+				using _vlist_type = _Map<Order, _elist_type>;
 				using Vert = map_iterator_wrapper<typename _vlist_type::GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR>;
 				struct _Vert : Vert {};
 				using _Edge = map_iterator_wrapper<typename _elist_type::const_iterator>;
@@ -240,48 +246,48 @@ namespace graph {
 				tracker<erasable_base<Edge>> _emap_tracker;
 			};
 
-			struct Out_adjacency_list : _Adjacency_list {
-				using _base_type = _Adjacency_list;
+			struct Out_adjacency_list : _Adjacency_list<> {
+				using _base_type = _Adjacency_list<>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using Out_degree = typename _base_type::_Degree;
-				static auto out_edges(const Vert& v) {
+				static inline auto out_edges(const Vert& v) {
 					return _base_type::_vert_edges(v);
 				}
-				static Out_degree out_degree(const Vert& v) {
+				static inline Out_degree out_degree(const Vert& v) {
 					return _base_type::_degree(v);
 				}
-				static auto tail(const Edge& e) {
+				static inline auto tail(const Edge& e) {
 					return _base_type::_edge_key(e);
 				}
-				static auto head(const Edge& e) {
+				static inline auto head(const Edge& e) {
 					return _base_type::_edge_cokey(e);
 				}
-				auto insert_edge(Vert s, Vert t) {
+				inline auto insert_edge(Vert s, Vert t) {
 					return _base_type::_insert_edge(std::move(s), std::move(t));
 				}
 			};
 
-			struct In_adjacency_list : _Adjacency_list {
-				using _base_type = _Adjacency_list;
+			struct In_adjacency_list : _Adjacency_list<> {
+				using _base_type = _Adjacency_list<>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using In_degree = typename _base_type::_Degree;
-				static auto in_edges(const Vert& v) {
+				static inline auto in_edges(const Vert& v) {
 					return _base_type::_vert_edges(v);
 				}
-				static In_degree in_degree(const Vert& v) {
+				static inline In_degree in_degree(const Vert& v) {
 					return _base_type::_degree(v);
 				}
-				static auto tail(const Edge& e) {
+				static inline auto tail(const Edge& e) {
 					return _base_type::_edge_cokey(e);
 				}
-				static auto head(const Edge& e) {
+				static inline auto head(const Edge& e) {
 					return _base_type::_edge_key(e);
 				}
-				auto insert_edge(Vert s, Vert t) {
+				inline auto insert_edge(Vert s, Vert t) {
 					return _base_type::_insert_edge(std::move(t), std::move(s));
 				}
 			};

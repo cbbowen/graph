@@ -1,12 +1,12 @@
 #pragma once
 
 #include <utility>
-#include <unordered_map>
 #include <iterator>
 #include <tuple>
 #include <ostream>
 
 #include "erasable_base.hpp"
+#include "unordered_key_map.hpp"
 
 namespace graph {
 	inline namespace v1 {
@@ -47,56 +47,23 @@ namespace graph {
 				It _it;
 			};
 
-			template <class It, class Tag, class T>
-			struct _map_iterator_map_base {
-				// Extending std::hash to map_iterator_wrapper and using an `unordered_map<map_iterator_wrapper, ...>` would look nice, but it would involve an indirection at every hash computation.
-				using key_type = map_iterator_wrapper<It, Tag>;
-				using inner_key_type = typename key_type::key_type;
-				_map_iterator_map_base(T default_) :
-					_default(std::move(default_)) {
-				}
-				const T& operator()(const key_type& k) const {
-					if (auto it = _map.find(k.key()); it != _map.end())
-						return it->second;
-					return _default;
-				}
-				// TODO: This usually double assigns the value on new keys, which can potentially be corrected by using a reference proxy, but achieving the correct semantics may be difficult.  To avoid this, use `assign` instead.
-				T& operator[](const key_type& k) {
-					return _map.try_emplace(k.key(), _default).first->second;
-				}
-				template <class U>
-				void assign(const key_type& k, U&& u) {
-					// This would be better, but is not yet in the MSVC standard library
-					//_map.insert_or_assign(k, std::forward<U>(u));
-					if (auto [it, inserted] = _map.emplace(k.key(), u); !inserted)
-						it->second = std::forward<U>(u);
-				}
-				template <class U>
-				T exchange(const key_type& k, U&& u) {
-					if (auto [it, inserted] = _map.emplace(k.key(), u); !inserted)
-						return std::exchange(it->second, std::forward<U>(u));
-					return _default;
-				}
-			protected:
-				T _default;
-				std::unordered_map<inner_key_type, T> _map;
-			};
+			// Extending std::hash to map_iterator_wrapper and using an `unordered_map<map_iterator_wrapper, ...>` would look nice, but it would involve an indirection at every hash computation.  Instead, we use a map that relies on the key have an inner key that is `EqualityComparable` and `Hashable`.
 
 			template <class K, class T>
 			struct persistent_map_iterator_map;
 
 			template <class It, class Tag, class T>
 			struct persistent_map_iterator_map<map_iterator_wrapper<It, Tag>, T> :
-				_map_iterator_map_base<It, Tag, T>,
+				unordered_key_map<map_iterator_wrapper<It, Tag>, T>,
 				erasable_base<map_iterator_wrapper<It, Tag>> {
-				using _base_type = _map_iterator_map_base<It, Tag, T>;
+				using _base_type = unordered_key_map<map_iterator_wrapper<It, Tag>, T>;
 				using key_type = typename _base_type::key_type;
 				using _base_type::_base_type;
 				void _erase(const key_type& k) override {
-					this->_map.erase(k.key());
+					_base_type::_erase(k);
 				}
 				void _clear() override {
-					this->_map.clear();
+					_base_type::_clear();
 				}
 			};
 
@@ -105,8 +72,8 @@ namespace graph {
 
 			template <class It, class Tag, class T>
 			struct ephemeral_map_iterator_map<map_iterator_wrapper<It, Tag>, T> :
-				_map_iterator_map_base<It, Tag, T> {
-				using _base_type = _map_iterator_map_base<It, Tag, T>;
+				unordered_key_map<map_iterator_wrapper<It, Tag>, T> {
+				using _base_type = unordered_key_map<map_iterator_wrapper<It, Tag>, T>;
 				using _base_type::_base_type;
 			};
 		}
