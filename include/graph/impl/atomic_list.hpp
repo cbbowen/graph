@@ -4,6 +4,8 @@
 #include <utility>
 #include <iterator>
 
+#include <range/v3/iterator_range.hpp>
+
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
@@ -82,7 +84,8 @@ namespace graph {
 				iterator end() {
 					return iterator{nullptr};
 				}
-				size_type size() const {
+				// This size may be (briefly) be lower than the actual size
+				size_type conservative_size() const {
 					return _size;
 				}
 			private:

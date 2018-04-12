@@ -36,7 +36,7 @@ namespace graph {
 						ranges::view::transform([](auto& v){ return Vert{&v}; });
 				}
 				auto order() const noexcept {
-					return _vlist.size();
+					return _vlist.conservative_size();
 				}
 				auto null_vert() const noexcept {
 					return Vert{};
@@ -45,7 +45,7 @@ namespace graph {
 					return ranges::view::all(*v);
 				}
 				static _Degree _degree(const Vert& v) {
-					return v->size();
+					return v->conservative_size();
 				}
 				auto edges() const {
 					return verts() |
@@ -53,7 +53,7 @@ namespace graph {
 						ranges::view::join;
 				}
 				auto size() const noexcept {
-					return _elist.size();
+					return _elist.conservative_size();
 				}
 				auto null_edge() const noexcept {
 					return Edge{};
