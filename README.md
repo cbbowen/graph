@@ -49,6 +49,15 @@ This doesn't mean you should usually need to do so, of course.  This library pro
 
 Note that the data structures that do not support removal are prefixed with `Stable_` to indicate that their vertices and edges are never invalidated.
 
+To declare a function accepting a generic `Graph` all you need to write is:
+
+```cpp
+template <class Impl>
+void f(const graph::Graph<Impl>& g);
+```
+
+This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defined below.
+
 | Concept                  | Member                                          | Semantics
 |:------------------------ |:----------------------------------------------- |:----------
 | `Graph`                  | `Vert : EqualityComparable, LessThanComparable, Hashable` | Vertex
