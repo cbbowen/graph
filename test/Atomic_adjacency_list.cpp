@@ -46,16 +46,15 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
-		WHEN("edges are inserted in parallel") {
-			for (int i = 0; i < M; ++i)
-				g.insert_vert();
+		WHEN("self-edges are inserted in parallel") {
+			g.insert_vert();
 			#pragma omp parallel for
 			for (int i = 0; i < N; ++i) {
 				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 					v = g.random_vert(thread_random[omp_get_thread_num()]);
 				g.insert_edge(u, v);
 			}
-			REQUIRE(g.order() == M);
+			REQUIRE(g.order() == 1);
 			REQUIRE(g.size() == N);
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
@@ -178,7 +177,7 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
-		WHEN("edges and vertices are inserted in parallel") {
+		WHEN("vertices and edges are inserted in parallel") {
 			#pragma omp parallel for
 			for (int i = 0; i < M; ++i) {
 				g.insert_vert();
@@ -301,5 +300,42 @@ TEST_CASE("atomic adjacency list", "[benchmark]") {
 			weight[e] = std::uniform_real_distribution<double>{}(r);
 		auto [tree, distances] = g.shortest_paths_from(g.random_vert(r), weight);
 	}
+#	ifdef _OPENMP
+	std::vector<std::mt19937> thread_random;
+	for (int i = 0; i < omp_get_max_threads(); ++i)
+		thread_random.emplace_back(i);
+	BENCHMARK("insert vertices in parallel") {
+		G g;
+		#pragma omp parallel for
+		for (int i = 0; i < order; ++i)
+			g.insert_vert();
+		REQUIRE(g.order() == order);
+	}
+	BENCHMARK("insert self-edges in parallel") {
+		G g;
+		g.insert_vert();
+		#pragma omp parallel for
+		for (int i = 0; i < size; ++i) {
+			auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+				v = g.random_vert(thread_random[omp_get_thread_num()]);
+			g.insert_edge(u, v);
+		}
+		REQUIRE(g.size() == size);
+	}
+	BENCHMARK("insert vertices and edges in parallel") {
+		G g;
+		#pragma omp parallel for
+		for (int i = 0; i < order; ++i) {
+			g.insert_vert();
+			for (int j = 0; j < (size + i) / order; ++j) {
+				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+					v = g.random_vert(thread_random[omp_get_thread_num()]);
+				g.insert_edge(u, v);
+			}
+		}
+		REQUIRE(g.order() == order);
+		REQUIRE(g.size() == size);
+	}
+#	endif
 }
 #endif
