@@ -68,12 +68,14 @@ namespace graph {
 		template <class Impl>
 		template <class... Args>
 		auto Out_edge_graph<Impl>::shortest_paths_from(Args&&... args) const {
-			return impl::_dijkstra<impl::traits::Out>(this->_impl(), std::forward<Args>(args)...);
+			auto [tree, distance] = impl::_dijkstra<impl::traits::Out>(this->_impl(), std::forward<Args>(args)...);
+			return std::make_pair(Graph(std::move(tree)), std::move(distance));
 		}
 		template <class Impl>
 		template <class... Args>
 		auto In_edge_graph<Impl>::shortest_paths_to(Args&&... args) const {
-			return impl::_dijkstra<impl::traits::In>(this->_impl(), std::forward<Args>(args)...);
+			auto [tree, distance] = impl::_dijkstra<impl::traits::In>(this->_impl(), std::forward<Args>(args)...);
+			return std::make_pair(Graph(std::move(tree)), std::move(distance));
 		}
 	}
 }

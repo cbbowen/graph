@@ -54,11 +54,15 @@ namespace graph {
 				auto vert_set() const {
 					return Verts::set(_g);
 				}
+				using Ephemeral_vert_set = typename Verts::ephemeral_set_type;
+				auto ephemeral_vert_set() const {
+					return Verts::ephemeral_set(_g);
+				}
 				template <class T>
 				using Vert_map = typename Verts::template ephemeral_map_type<T>;
 				template <class T>
 				auto vert_map(T default_) const {
-					return Verts::ephemeral_map(std::move(default_));
+					return Verts::ephemeral_map(_g, std::move(default_));
 				}
 				template <class T>
 				using Ephemeral_vert_map = Vert_map<T>;
@@ -70,6 +74,10 @@ namespace graph {
 				using Edge_set = typename Edges::set_type;
 				auto edge_set() const {
 					return Edges::set(_g);
+				}
+				using Ephemeral_edge_set = typename Edges::ephemeral_set_type;
+				auto ephemeral_edge_set() const {
+					return Edges::ephemeral_set(_g);
 				}
 				template <class T>
 				using Edge_map = typename Edges::template ephemeral_map_type<T>;
