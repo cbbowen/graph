@@ -22,10 +22,10 @@ for (auto e : g.edges())
 	weight[e] = std::uniform_real_distribution(1.0, 2.0)(random);
 
 // Run Dijkstra's algorithm
-auto shortest_paths = g.shortest_paths_from(g.random_vert(random), weight);
+auto [tree, distance] = g.shortest_paths_from(g.random_vert(random), weight);
 
 // Output in dot format
-std::cout << g.dot_format("weight"_of_edge = weight) << std::endl;
+std::cout << g.dot_format("distance"_of_vert = distance) << std::endl;
 ```
 
 # Efficient
@@ -97,3 +97,7 @@ Note that the data structures that do not support removal are prefixed with `Sta
 |                            | `g.shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
 | Prim's                     | `g.minimum_tree_reachable_from(v, w, ...)`  | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
 |                            | `g.minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
+
+# Contributing
+
+If you find a bug or there is a data structure or algorithm you think should be added, please create an issue.  Or if you're feeling ambitious, implement the changes yourself and send a pull request.
