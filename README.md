@@ -24,8 +24,8 @@ for (auto e : g.edges())
 // Run Dijkstra's algorithm
 auto [tree, distance] = g.shortest_paths_from(g.random_vert(random), weight);
 
-// Output in dot format
-std::cout << g.dot_format("distance"_of_vert = distance) << std::endl;
+// Output result in dot format
+std::cout << tree.dot_format("distance"_of_vert = distance) << std::endl;
 ```
 
 # Efficient
