@@ -16,7 +16,7 @@ namespace graph {
 					_value(std::forward<Args>(args)...) {
 				}
 				T _value;
-				atomic_list_node *_next = nullptr;
+				atomic_list_node *_next;
 			};
 			template <class T, class Node>
 			struct atomic_list_iterator {
@@ -64,6 +64,7 @@ namespace graph {
 				template <class... Args>
 				T& emplace(Args&&... args) {
 					auto node = new _node_type(std::forward<Args>(args)...);
+					node->_next = _head.load(std::memory_order_relaxed);
 					// No exceptions possible, so node will never leak
 					while (!_head.compare_exchange_weak(node->_next, node, std::memory_order_release, std::memory_order_relaxed))
 						;
