@@ -167,7 +167,7 @@ else ifeq ($(CONFIG),profile)
 	$(PROFILER) $(OUTPUT)
 	$(PROFILE_ANALYZER) $(PROFILEOUTPUT)
 else ifeq ($(CONFIG),gcov)
-	rm $(OBJDIR)/*.gcda
+	$(RM) $(OBJDIR)/*.gcda
 	$(OUTPUT)
 	lcov --base-directory $(shell pwd) --directory $(OBJDIR) --gcov-tool ./llvm-gcov.sh --capture --output-file $(BUILDDIR)/unfiltered.info
 	lcov --extract $(BUILDDIR)/unfiltered.info $(shell readlink -f ../include)/\* -o $(BUILDDIR)/coverage.info
