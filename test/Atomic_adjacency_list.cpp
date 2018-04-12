@@ -3,6 +3,15 @@
 
 #include "Graph_tester.hpp"
 
+#include <range/v3/distance.hpp>
+
+#if defined(__has_include) && !__has_include(<omp.h>)
+#	undef _OPENMP
+#endif
+#ifdef _OPENMP
+#	include <omp.h>
+#endif
+
 SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_list]") {
 	using G = graph::Atomic_out_adjacency_list;
 	GIVEN("an empty graph") {
@@ -23,6 +32,50 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 				t = gt.insert_vert();
 			g.insert_edge(s, t);
 		}
+		#ifdef _OPENMP
+		std::vector<std::mt19937> thread_random;
+		for (int i = 0; i < omp_get_max_threads(); ++i)
+			thread_random.emplace_back(i);
+		const std::size_t M = 1000, N = 10000;
+		WHEN("vertices are inserted in parallel") {
+			#pragma omp parallel for
+			for (int i = 0; i < M; ++i)
+				g.insert_vert();
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == 0);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		WHEN("edges are inserted in parallel") {
+			for (int i = 0; i < M; ++i)
+				g.insert_vert();
+			#pragma omp parallel for
+			for (int i = 0; i < N; ++i) {
+				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+					v = g.random_vert(thread_random[omp_get_thread_num()]);
+				g.insert_edge(u, v);
+			}
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == N);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		WHEN("edges and vertices are inserted in parallel") {
+			#pragma omp parallel for
+			for (int i = 0; i < M; ++i) {
+				g.insert_vert();
+				for (int j = 0; j < (N + i) / M; ++j) {
+					auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+						v = g.random_vert(thread_random[omp_get_thread_num()]);
+					g.insert_edge(u, v);
+				}
+			}
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == N);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		#endif
 	}
 	GIVEN("a random graph") {
 		std::mt19937 r;
@@ -97,6 +150,50 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 				t = gt.insert_vert();
 			g.insert_edge(s, t);
 		}
+		#ifdef _OPENMP
+		std::vector<std::mt19937> thread_random;
+		for (int i = 0; i < omp_get_max_threads(); ++i)
+			thread_random.emplace_back(i);
+		const std::size_t M = 1000, N = 10000;
+		WHEN("vertices are inserted in parallel") {
+			#pragma omp parallel for
+			for (int i = 0; i < M; ++i)
+				g.insert_vert();
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == 0);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		WHEN("edges are inserted in parallel") {
+			for (int i = 0; i < M; ++i)
+				g.insert_vert();
+			#pragma omp parallel for
+			for (int i = 0; i < N; ++i) {
+				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+					v = g.random_vert(thread_random[omp_get_thread_num()]);
+				g.insert_edge(u, v);
+			}
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == N);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		WHEN("edges and vertices are inserted in parallel") {
+			#pragma omp parallel for
+			for (int i = 0; i < M; ++i) {
+				g.insert_vert();
+				for (int j = 0; j < (N + i) / M; ++j) {
+					auto u = g.random_vert(thread_random[omp_get_thread_num()]),
+						v = g.random_vert(thread_random[omp_get_thread_num()]);
+					g.insert_edge(u, v);
+				}
+			}
+			REQUIRE(g.order() == M);
+			REQUIRE(g.size() == N);
+			REQUIRE(ranges::distance(g.verts()) == g.order());
+			REQUIRE(ranges::distance(g.edges()) == g.size());
+		}
+		#endif
 	}
 	GIVEN("a random graph") {
 		std::mt19937 r;

@@ -22,7 +22,8 @@
 NAME ?= $(notdir $(shell pwd))
 
 # OPTION: Add additional compiler, preprocessor, and loader flags
-CXXFLAGS += -std=c++1z
+OMPFLAGS ?= -fopenmp
+CXXFLAGS += -std=c++1z $(OMPFLAGS)
 CPPFLAGS +=
 LDFLAGS +=
 

@@ -9,7 +9,10 @@
                 "${workspaceFolder}/extern/ranges-v3/include",
                 "${workspaceFolder}/include"
             ],
-            "defines": [],
+            "defines": [
+                "GRAPH_BENCHMARK",
+                "_OPENMP"
+            ],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
@@ -39,7 +42,10 @@
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include"
             ],
-            "defines": [],
+            "defines": [
+                "GRAPH_BENCHMARK",
+                "_OPENMP"
+            ],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
@@ -70,6 +76,8 @@
                 "${workspaceFolder}/include"
             ],
             "defines": [
+                "GRAPH_BENCHMARK",
+                "_OPENMP",
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
