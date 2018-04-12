@@ -13,7 +13,7 @@ namespace graph {
 			struct atomic_list_node {
 				template <class... Args>
 				atomic_list_node(Args&&... args) :
-					_value(std::forward<Args>(args)...) {
+					_value{std::forward<Args>(args)...} {
 				}
 				T _value;
 				atomic_list_node *_next;

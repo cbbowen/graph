@@ -26,10 +26,10 @@ namespace graph {
 					return _elist.size();
 				}
 				auto tail(const Edge& e) const {
-					return _elist[static_cast<Size>(e)].first;
+					return _elist[e.key()].first;
 				}
 				auto head(const Edge& e) const {
-					return _elist[static_cast<Size>(e)].second;
+					return _elist[e.key()].second;
 				}
 				auto insert_edge(Vert s, Vert t) {
 					auto e = Edge(_elist.size());
@@ -37,13 +37,13 @@ namespace graph {
 					return e;
 				}
 				template <class T>
-				using Edge_map = persistent_contiguous_map<Edge, T>;
+				using Edge_map = persistent_contiguous_key_map<Edge, T>;
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(std::move(default_));
 				} // LCOV_EXCL_LINE (unreachable)
 				template <class T>
-				using Ephemeral_edge_map = ephemeral_contiguous_map<Edge, T>;
+				using Ephemeral_edge_map = ephemeral_contiguous_key_map<Edge, T>;
 				template <class T>
 				auto ephemeral_edge_map(T default_) const {
 					return Ephemeral_edge_map<T>(size(), std::move(default_));
@@ -54,7 +54,7 @@ namespace graph {
 					return Edge_set();
 				}
 				//using Ephemeral_edge_set = Edge_set;
-				using Ephemeral_edge_set = ephemeral_contiguous_set<Edge>;
+				using Ephemeral_edge_set = ephemeral_contiguous_key_set<Edge>;
 				auto ephemeral_edge_set() const {
 					//return edge_set();
 					return Ephemeral_edge_set(size());
