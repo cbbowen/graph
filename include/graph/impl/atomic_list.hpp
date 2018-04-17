@@ -85,7 +85,7 @@ namespace graph {
 				iterator end() {
 					return iterator{nullptr};
 				}
-				// This size may be (briefly) be lower than the actual size
+				// This size may (briefly) be lower than the actual size
 				size_type conservative_size() const {
 					return _size;
 				}
