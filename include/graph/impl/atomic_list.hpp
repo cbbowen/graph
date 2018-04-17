@@ -46,6 +46,7 @@ namespace graph {
 				}
 				Node *_node;
 			};
+			// TODO: Allocator support, because this would be particularly useful in parallel applications.
 			template <class T>
 			struct atomic_list {
 				using _node_type = atomic_list_node<T>;
@@ -53,8 +54,12 @@ namespace graph {
 				using const_iterator = atomic_list_iterator<const T, _node_type>;
 				using iterator = atomic_list_iterator<T, _node_type>;
 				using size_type = unsigned int;
-				atomic_list(atomic_list&&) = delete;
 				atomic_list(const atomic_list&) = delete;
+				// Despite the use of atomic exchanges here, it is only safe to read from an atomic_list that is being moved from, not write to it.  This assumption means we only need to worry about the write order below.
+				atomic_list(atomic_list&& other) noexcept :
+					_size{other._size.exchange(0, std::memory_order_release)},
+					_head{other._head.exchange(nullptr, std::memory_order_release)} {
+				}
 				atomic_list() = default;
 				~atomic_list() {
 					_node_type *head = _head.load(std::memory_order_relaxed);
@@ -90,8 +95,8 @@ namespace graph {
 					return _size;
 				}
 			private:
-				std::atomic<_node_type *> _head{nullptr};
 				std::atomic<size_type> _size{0};
+				std::atomic<_node_type *> _head{nullptr};
 			};
 		}
 	}
