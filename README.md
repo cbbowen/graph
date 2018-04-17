@@ -68,7 +68,7 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 |                          | `vert_set() ⟶ Set<Vert>`                       | New empty set of vertices
 |                          | `Edge : EqualityComparable, LessThanComparable, Hashable`  | Edge
 |                          | `edges() const ⟶ Range<Edge>`                  | Range over all edges
-|                          | `null_edge() const ⟶ Edge`                     | Unique edge which will never comparable equal to one in the graph
+|                          | `null_edge() const ⟶ Edge`                     | Unique edge which will never compare equal to one in the graph
 |                          | `tail(Edge e) const ⟶ Vert`                    | Tail (or source) of `e`
 |                          | `head(Edge e) const ⟶ Vert`                    | Head (or target) of `e`
 |                          | `size() const ⟶ unsigned`                      | `size(edges())`
