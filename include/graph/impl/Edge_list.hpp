@@ -27,12 +27,8 @@ namespace graph {
 							_elist.begin(), _elist.end()) |
 						ranges::view::transform(construct<Edge>);
 				}
-				// TODO: This fails in seeming violation of C++14 default-constructed iterator requirements.
-				//static auto null_edge() noexcept {
-				//	return Edge{};
-				//}
-				auto null_edge() const noexcept {
-					return Edge{_elist.end()};
+				static auto null_edge() noexcept {
+					return Edge{};
 				}
 				auto size() const noexcept {
 					return _elist.size();

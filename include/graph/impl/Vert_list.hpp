@@ -22,12 +22,8 @@ namespace graph {
 							_vlist.begin(), _vlist.end()) |
 						ranges::view::transform(construct<Vert>);
 				}
-				// TODO: This fails in seeming violation of C++14 default-constructed iterator requirements.
-				//static auto _null_vert() noexcept {
-				//	return Vert{};
-				//}
-				auto null_vert() const noexcept {
-					return Vert{_vlist.end()};
+				static auto null_vert() noexcept {
+					return Vert{};
 				}
 				auto order() const noexcept {
 					return _vlist.size();

@@ -12,11 +12,12 @@ namespace graph {
 			template <class T>
 			struct atomic_list_node {
 				template <class... Args>
-				atomic_list_node(Args&&... args) :
-					_value{std::forward<Args>(args)...} {
+				explicit atomic_list_node(atomic_list_node *next, Args&&... args) :
+					_next{next}, _value{std::forward<Args>(args)...} {
 				}
-				T _value;
+				atomic_list_node(const atomic_list_node&) = delete;
 				atomic_list_node *_next;
+				T _value;
 			};
 			template <class T, class Node>
 			struct atomic_list_iterator {
@@ -68,8 +69,9 @@ namespace graph {
 				}
 				template <class... Args>
 				T& emplace(Args&&... args) {
-					auto node = new _node_type(std::forward<Args>(args)...);
-					node->_next = _head.load(std::memory_order_relaxed);
+					auto node = new _node_type(
+						_head.load(std::memory_order_relaxed),
+						std::forward<Args>(args)...);
 					// No exceptions possible, so node will never leak
 					while (!_head.compare_exchange_weak(node->_next, node, std::memory_order_release, std::memory_order_relaxed))
 						;
