@@ -10,7 +10,7 @@ namespace graph {
 	inline namespace v1 {
 		namespace impl {
 			template <class Adjacency, class G>
-			class _Subforest {
+			class Subforest_base {
 				using Verts = traits::Verts<G>;
 				using Edges = traits::Edges<G>;
 			public:
@@ -18,7 +18,7 @@ namespace graph {
 				using Order = typename Verts::size_type;
 				using Edge = typename Edges::value_type;
 				using Size = typename Edges::size_type;
-				_Subforest(const G& g) : _g(g),
+				Subforest_base(const G& g) : _g(g),
 					_edges(_g.get().ephemeral_vert_map(_g.get().null_edge())) {
 				}
 				auto verts() const {
@@ -107,7 +107,7 @@ namespace graph {
 				}
 
 			protected:
-				using _Degree_type = int;
+				using _degree_type = int;
 				auto _key_edge_or_null(const Vert& v) const {
 					return _edges(v);
 				}
@@ -115,7 +115,7 @@ namespace graph {
 					return ranges::view::single(_edges(v)) |
 						ranges::view::remove_if([ne=null_edge()](auto e){ return e == ne; });
 				}
-				_Degree_type _key_degree(const Vert& v) const {
+				_degree_type _key_degree(const Vert& v) const {
 					return (_edges(v) != null_edge()) ? 1 : 0;
 				}
 				std::vector<Edge> _key_path(Vert v) const {
@@ -134,8 +134,8 @@ namespace graph {
 			struct Subforest;
 			template <class G>
 			struct Subforest<traits::Out, G> :
-				_Subforest<traits::Out, G> {
-				using _base_type = _Subforest<traits::Out, G>;
+				Subforest_base<traits::Out, G> {
+				using _base_type = Subforest_base<traits::Out, G>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using Out_degree = int; // 0 or 1
@@ -155,8 +155,8 @@ namespace graph {
 			};
 			template <class G>
 			struct Subforest<traits::In, G> :
-				_Subforest<traits::In, G> {
-				using _base_type = _Subforest<traits::In, G>;
+				Subforest_base<traits::In, G> {
+				using _base_type = Subforest_base<traits::In, G>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using In_degree = int; // 0 or 1

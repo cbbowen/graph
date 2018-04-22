@@ -63,18 +63,15 @@
     <ClCompile Include="..\test\Stable_edge_list.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\include\graph\dijkstra.inl" />
-    <None Include="..\include\graph\format.inl" />
-    <None Include="..\include\graph\random.inl" />
-    <None Include="..\include\graph\reverse.inl" />
-    <None Include="..\include\graph\scc.inl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\include\graph\Adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\Atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Edge_list.hpp" />
     <ClInclude Include="..\include\graph\Graph.hpp" />
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\impl\Atomic_adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\impl\atomic_list.hpp" />
     <ClInclude Include="..\include\graph\impl\construct_fn.hpp" />
+    <ClInclude Include="..\include\graph\impl\contiguous_key_map.hpp" />
     <ClInclude Include="..\include\graph\impl\Depth_first_search.hpp" />
     <ClInclude Include="..\include\graph\impl\Edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\erasable_base.hpp" />
@@ -82,18 +79,28 @@
     <ClInclude Include="..\include\graph\impl\get_fn.hpp" />
     <ClInclude Include="..\include\graph\impl\integral_wrapper.hpp" />
     <ClInclude Include="..\include\graph\impl\map_iterator_wrapper.hpp" />
+    <ClInclude Include="..\include\graph\impl\pointer_wrapper.hpp" />
     <ClInclude Include="..\include\graph\impl\Reverse.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_vert_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Strongly_connected_components.hpp" />
+    <ClInclude Include="..\include\graph\impl\Subforest.hpp" />
     <ClInclude Include="..\include\graph\impl\tracker.hpp" />
     <ClInclude Include="..\include\graph\impl\traits.hpp" />
+    <ClInclude Include="..\include\graph\impl\unordered_key_map.hpp" />
     <ClInclude Include="..\include\graph\impl\unordered_set.hpp" />
     <ClInclude Include="..\include\graph\impl\Vert_list.hpp" />
     <ClInclude Include="..\include\graph\Stable_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Stable_edge_list.hpp" />
-    <ClInclude Include="..\test\Graph_tester.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\graph\dijkstra.inl" />
+    <None Include="..\include\graph\format.inl" />
+    <None Include="..\include\graph\random.inl" />
+    <None Include="..\include\graph\reverse.inl" />
+    <None Include="..\include\graph\scc.inl" />
+    <None Include="..\include\graph\subforest.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

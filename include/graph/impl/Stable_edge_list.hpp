@@ -8,12 +8,12 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class _Order = std::size_t, class _Size = std::size_t>
+			template <class Order = std::size_t, class Size = std::size_t>
 			struct Stable_edge_list :
-				Stable_vert_list<_Order> {
-				using _base_type = Stable_vert_list<_Order>;
+				Stable_vert_list<Order> {
+				using _base_type = Stable_vert_list<Order>;
 				using Vert = typename _base_type::Vert;
-				using Size = _Size;
+				using Size = Size;
 				using Edge = integral_wrapper<Size, struct edge_tag>;
 				auto edges() const {
 					return ranges::view::iota(Size{}, _elist.size()) |

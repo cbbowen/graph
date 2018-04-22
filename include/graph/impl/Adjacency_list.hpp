@@ -40,7 +40,7 @@ namespace graph {
 			};
 
 			template <template <class, class, class...> class _Map>
-			struct _Adjacency_list {
+			struct Adjacency_list_base {
 				using Order = std::size_t;
 				using Size = std::size_t;
 				using _Degree = std::size_t;
@@ -242,8 +242,8 @@ namespace graph {
 			};
 
 			template <template <class, class, class...> class _Map = std::map>
-			struct Out_adjacency_list : _Adjacency_list<_Map> {
-				using _base_type = _Adjacency_list<_Map>;
+			struct Out_adjacency_list : Adjacency_list_base<_Map> {
+				using _base_type = Adjacency_list_base<_Map>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
@@ -266,8 +266,8 @@ namespace graph {
 			};
 
 			template <template <class, class, class...> class _Map = std::map>
-			struct In_adjacency_list : _Adjacency_list<_Map> {
-				using _base_type = _Adjacency_list<_Map>;
+			struct In_adjacency_list : Adjacency_list_base<_Map> {
+				using _base_type = Adjacency_list_base<_Map>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;

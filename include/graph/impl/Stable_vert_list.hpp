@@ -11,9 +11,9 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class _Order = std::size_t>
+			template <class Order = std::size_t>
 			struct Stable_vert_list {
-				using Order = _Order;
+				using Order = Order;
 				using Vert = integral_wrapper<Order, struct vert_tag>;
 				auto verts() const noexcept {
 					return ranges::view::iota(Order{}, _vlast) |

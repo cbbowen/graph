@@ -14,12 +14,12 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class _Order = std::size_t, class _Size = std::size_t>
+			template <class Order = std::size_t, class Size = std::size_t>
 			struct Edge_list :
-				Vert_list<_Order> {
-				using _base_type = Vert_list<_Order>;
+				Vert_list<Order> {
+				using _base_type = Vert_list<Order>;
 				using Vert = typename _base_type::Vert;
-				using Size = _Size;
+				using Size = Size;
 				using _elist_type = std::map<Size, std::pair<Vert, Vert>>;
 				using Edge = map_iterator_wrapper<typename _elist_type::const_iterator, struct edge_tag>;
 				auto edges() const {
