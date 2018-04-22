@@ -19,7 +19,7 @@ namespace graph {
 					return ranges::view::iota(Size{}, _elist.size()) |
 						ranges::view::transform(construct<Edge>);
 				}
-				static auto null_edge() noexcept {
+				auto null_edge() const noexcept {
 					return Edge{};
 				}
 				auto size() const noexcept {

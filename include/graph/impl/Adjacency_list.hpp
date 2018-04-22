@@ -67,7 +67,12 @@ namespace graph {
 					return _vlist.size();
 				}
 				auto null_vert() const noexcept {
+					// Microsoft's STL implementation doesn't correctly support comparison of value-initialized iterators (per n4659 27.2.5.2)
+#ifdef _MSVC_STL_VERSION
 					return Vert{_vlist.end()};
+#else
+					return Vert{};
+#endif
 				}
 				static auto _vert_edges(const Vert& v) {
 					auto&& es = v._it->second;

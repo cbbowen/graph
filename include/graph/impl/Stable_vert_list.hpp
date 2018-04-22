@@ -19,7 +19,7 @@ namespace graph {
 					return ranges::view::iota(Order{}, _vlast) |
 						ranges::view::transform(construct<Vert>);
 				}
-				static auto null_vert() noexcept {
+				auto null_vert() const noexcept {
 					return Vert{};
 				}
 				auto order() const noexcept {
