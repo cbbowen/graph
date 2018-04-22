@@ -12,9 +12,9 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class Order = std::size_t>
+			template <class Order_ = std::size_t>
 			struct Vert_list {
-				using Order = Order;
+				using Order = Order_;
 				using _vlist_type = std::set<std::tuple<Order>>;
 				using Vert = map_iterator_wrapper<typename _vlist_type::const_iterator, struct vert_tag>;
 				auto verts() const noexcept {
