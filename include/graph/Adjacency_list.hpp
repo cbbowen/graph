@@ -12,5 +12,9 @@ namespace graph {
 		// Classical adjacency list graph representation with incoming edge iteration.
 		using In_adjacency_list = In_edge_graph<
 			impl::In_adjacency_list<>>;
+
+		// Classical adjacency list graph representation with outgoing and incoming edge iteration.
+		using Bi_adjacency_list = Bi_edge_graph<
+			impl::Bi_adjacency_list<>>;
 	}
 }

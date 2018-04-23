@@ -9,9 +9,10 @@ namespace graph {
 		namespace impl {
 			template <class Key, class Hasher = std::hash<Key>>
 			struct unordered_set {
-				using _map_type = std::unordered_set<Key, Hasher>;
-				using key_type = typename _map_type::key_type;
-				using iterator = typename _map_type::const_iterator;
+				using _raw_type = std::unordered_set<Key, Hasher>;
+				using size_type = typename _raw_type::size_type;
+				using key_type = typename _raw_type::key_type;
+				using iterator = typename _raw_type::const_iterator;
 				auto size() const {
 					return _map.size();
 				}
@@ -34,8 +35,11 @@ namespace graph {
 				iterator end() const {
 					return _map.end();
 				}
+				_raw_type _raw() && {
+					return std::move(_map);
+				}
 			private:
-				_map_type _map;
+				_raw_type _map;
 			};
 
 			template <class Key, class Hasher = std::hash<Key>>

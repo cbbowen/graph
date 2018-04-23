@@ -11,6 +11,7 @@
 #include "tracker.hpp"
 #include "construct_fn.hpp"
 #include "exceptions.hpp"
+#include "Edge_list.hpp"
 
 // Ideally, there would be a good way to get an iterator from const_iterator and a mutable container (better than a zero-length erase).  Since there is not, we have to make our container mutable so we can get iterators to it in const contexts.
 #define GRAPH_V1_ADJACENCY_LIST_MUTABLE_HACK 1
@@ -292,6 +293,61 @@ namespace graph {
 				auto insert_edge(Vert s, Vert t) {
 					return _base_type::_insert_edge(std::move(t), std::move(s));
 				}
+			};
+
+			template <class Order_ = std::size_t, class Size_ = std::size_t>
+			struct Bi_adjacency_list : Edge_list<Order_, Size_> {
+				using _base_type = Edge_list<Order_, Size_>;
+				using _base_type::_base_type;
+				using _elist_type = typename _base_type::Edge_set;
+				using _alist_type = typename _base_type::template Vert_map<std::pair<_elist_type, _elist_type>>;
+				using Vert = typename _base_type::Vert;
+				using Edge = typename _base_type::Edge;
+				using Out_degree = typename _elist_type::size_type;
+				using In_degree = typename _elist_type::size_type;
+				Bi_adjacency_list() :
+					_alist(this->vert_map(std::make_pair(
+						this->edge_set(), this->edge_set()
+					))) {
+				}
+				auto out_edges(const Vert& v) const {
+					return ranges::view::all(_alist(v).first);
+				}
+				auto out_degree(const Vert& v) const {
+					return _alist(v).first.size();
+				}
+				auto in_edges(const Vert& v) const {
+					return ranges::view::all(_alist(v).second);
+				}
+				auto in_degree(const Vert& v) const {
+					return _alist(v).second.size();
+				}
+				auto insert_edge(Vert s, Vert t) {
+					auto e = _base_type::insert_edge(std::move(s), t);
+					_alist[s].first.insert(e);
+					_alist[t].second.insert(e);
+					return e;
+				}
+				void erase_vert(const Vert& v) {
+					auto out_edges = std::move(_alist[v].first)._untracked()._raw();
+					auto in_edges = std::move(_alist[v].second)._untracked()._raw();
+					for (auto e : out_edges) {
+						_base_type::erase_edge(e);
+						// This is necessary to handle to self-edges
+						in_edges.erase(e);
+					}
+					for (auto e : in_edges)
+						_base_type::erase_edge(e);
+					_base_type::erase_vert(v);
+				}
+				void erase_edge(const Edge& e) {
+					bool result0 = _alist[this->tail(e)].first.erase(e);
+					bool result1 = _alist[this->head(e)].second.erase(e);
+					assert(result0 && result1);
+					_base_type::erase_edge(e);
+				}
+			private:
+				_alist_type _alist;
 			};
 		}
 	}

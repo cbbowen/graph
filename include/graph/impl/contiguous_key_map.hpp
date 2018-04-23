@@ -81,6 +81,7 @@ namespace graph {
 				using key_type = K;
 				using flag_type = typename key_type::flag_type;
 				using _container_type = std::vector<key_type>;
+				using size_type = typename _container_type::size_type;
 				using iterator = typename _container_type::iterator;
 				ephemeral_contiguous_key_set(std::size_t size) :
 					_flags(size, flag_type{}) {

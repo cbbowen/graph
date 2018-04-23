@@ -380,6 +380,4 @@ struct Bi_edge_graph_tester :
 		_out_type::erase_edge_postconditions();
 		_in_type::erase_edge_postconditions();
 	}
-private:
-	graph::Vert_map<G, graph::Edge_set<G>> im;
 };
