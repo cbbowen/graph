@@ -212,7 +212,7 @@ private:
 
 template <class G>
 struct Out_edge_graph_tester :
-	Graph_tester<G> {
+	virtual Graph_tester<G> {
 	using _base_type = Graph_tester<G>;
 	using V = typename _base_type::V;
 	using E = typename _base_type::E;
@@ -239,26 +239,37 @@ struct Out_edge_graph_tester :
 	}
 	auto insert_vert() {
 		auto v = _base_type::insert_vert();
-		// postconditions
-		require_out_edge_invariants();
+		insert_vert_postconditions(v);
 		return v;
+	}
+	auto insert_vert_postconditions(V v) {
+		require_out_edge_invariants();
 	}
 	auto insert_edge(V s, V t) {
 		auto e = _base_type::insert_edge(s, t);
-		// postconditions
+		insert_edge_postconditions(s, t, e);
+		return e;
+	}
+	auto insert_edge_postconditions(V s, V t, E e) {
 		REQUIRE(om[s].insert(e));
 		require_out_edge_invariants();
-		return e;
 	}
 	void erase_vert(const V& v) {
 		_base_type::erase_vert(v);
-		// postconditions
+		erase_vert_postconditions();
+	}
+	void erase_vert_postconditions() {
 		require_out_edge_invariants();
 	}
 	void erase_edge(const E& e) {
-		REQUIRE(om[this->g.tail(e)].erase(e));
+		erase_edge_preconditions(e);
 		_base_type::erase_edge(e);
-		// postconditions
+		erase_edge_postconditions();
+	}
+	void erase_edge_preconditions(const E& e) {
+		REQUIRE(om[this->g.tail(e)].erase(e));
+	}
+	void erase_edge_postconditions() {
 		require_out_edge_invariants();
 	}
 private:
@@ -267,7 +278,7 @@ private:
 
 template <class G>
 struct In_edge_graph_tester :
-	Graph_tester<G> {
+	virtual Graph_tester<G> {
 	using _base_type = Graph_tester<G>;
 	using V = typename _base_type::V;
 	using E = typename _base_type::E;
@@ -294,27 +305,80 @@ struct In_edge_graph_tester :
 	}
 	auto insert_vert() {
 		auto v = _base_type::insert_vert();
-		// postconditions
+		insert_vert_postconditions(v);
+		return v;
+	}
+	auto insert_vert_postconditions(V v) {
 		require_in_edge_invariants();
+	}
+	auto insert_edge(V s, V t) {
+		auto e = _base_type::insert_edge(s, t);
+		insert_edge_postconditions(s, t, e);
+		return e;
+	}
+	auto insert_edge_postconditions(V s, V t, E e) {
+		REQUIRE(im[t].insert(e));
+		require_in_edge_invariants();
+	}
+	void erase_vert(const V& v) {
+		_base_type::erase_vert(v);
+		erase_vert_postconditions();
+	}
+	void erase_vert_postconditions() {
+		require_in_edge_invariants();
+	}
+	void erase_edge(const E& e) {
+		erase_edge_preconditions(e);
+		_base_type::erase_edge(e);
+		erase_edge_postconditions();
+	}
+	void erase_edge_preconditions(const E& e) {
+		REQUIRE(im[this->g.head(e)].erase(e));
+	}
+	void erase_edge_postconditions() {
+		require_in_edge_invariants();
+	}
+private:
+	graph::Vert_map<G, graph::Edge_set<G>> im;
+};
+
+template <class G>
+struct Bi_edge_graph_tester :
+	Out_edge_graph_tester<G>,
+	In_edge_graph_tester<G> {
+	using _out_type = Out_edge_graph_tester<G>;
+	using _in_type = In_edge_graph_tester<G>;
+	using _base_type = Graph_tester<G>;
+	using V = typename _base_type::V;
+	using E = typename _base_type::E;
+	Bi_edge_graph_tester(G& g) :
+		_base_type(g),
+		_out_type(g),
+		_in_type(g) {
+	}
+	auto insert_vert() {
+		auto v = _base_type::insert_vert();
+		_out_type::insert_vert_postconditions(v);
+		_in_type::insert_vert_postconditions(v);
 		return v;
 	}
 	auto insert_edge(V s, V t) {
 		auto e = _base_type::insert_edge(s, t);
-		// postconditions
-		REQUIRE(im[t].insert(e));
-		require_in_edge_invariants();
+		_out_type::insert_edge_postconditions(s, t, e);
+		_in_type::insert_edge_postconditions(s, t, e);
 		return e;
 	}
 	void erase_vert(const V& v) {
 		_base_type::erase_vert(v);
-		// postconditions
-		require_in_edge_invariants();
+		_out_type::erase_vert_postconditions();
+		_in_type::erase_vert_postconditions();
 	}
 	void erase_edge(const E& e) {
-		REQUIRE(im[this->g.head(e)].erase(e));
+		_out_type::erase_edge_preconditions(e);
+		_in_type::erase_edge_preconditions(e);
 		_base_type::erase_edge(e);
-		// postconditions
-		require_in_edge_invariants();
+		_out_type::erase_edge_postconditions();
+		_in_type::erase_edge_postconditions();
 	}
 private:
 	graph::Vert_map<G, graph::Edge_set<G>> im;

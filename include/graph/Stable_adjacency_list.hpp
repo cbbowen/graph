@@ -12,5 +12,9 @@ namespace graph {
 		// Classical adjacency list graph representation with incoming edge iteration which does not support removal.
 		using Stable_in_adjacency_list = In_edge_graph<
 			impl::Stable_in_adjacency_list<>>;
+
+		// Classical adjacency list graph representation with both outgoing and incoming edge iteration which does not support removal.
+		using Stable_bi_adjacency_list = Bi_edge_graph<
+			impl::Stable_bi_adjacency_list<>>;
 	}
 }

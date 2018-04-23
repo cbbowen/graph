@@ -286,12 +286,19 @@ namespace graph {
 		In_edge_graph(Impl) -> In_edge_graph<Impl>;
 
 		template <class Impl>
-		class Bidirectional_edge_graph :
+		class Bi_edge_graph :
 			public Out_edge_graph<Impl>,
 			public In_edge_graph<Impl> {
 			using _base_type = Graph<Impl>;
 		public:
-			using _base_type::_base_type;
+			using Vert = typename _base_type::Vert;
+			using Edge = typename _base_type::Edge;
+			// using _base_type::_base_type;
+			template <class... Args,
+				class = std::enable_if_t<std::is_constructible_v<_base_type, Args&&...>>>
+			Bi_edge_graph(Args&&... args) :
+				_base_type(std::forward<Args>(args)...) {
+			}
 		};
 
 		template <class Impl>

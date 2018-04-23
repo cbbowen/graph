@@ -73,6 +73,37 @@ namespace graph {
 			private:
 				_alist_type _alist;
 			};
+			template <class Order_ = std::size_t, class Size_ = std::size_t>
+			struct Stable_bi_adjacency_list :
+				Stable_edge_list<Order_, Size_> {
+				using _base_type = Stable_edge_list<Order_, Size_>;
+				using Vert = typename _base_type::Vert;
+				using Edge = typename _base_type::Edge;
+				using _alist_type = GRAPH_V1_STABLE_ADJACENCY_LIST_TYPE;
+				using Out_degree = GRAPH_V1_STABLE_ADJACENCY_LIST_DEGREE_TYPE;
+				using In_degree = GRAPH_V1_STABLE_ADJACENCY_LIST_DEGREE_TYPE;
+				auto out_edges(const Vert& v) const {
+					return GRAPH_V1_STABLE_ADJACENCY_LIST_RANGE(v, _outlist);
+				}
+				auto out_degree(const Vert& v) const {
+					return GRAPH_V1_STABLE_ADJACENCY_LIST_DEGREE(v, _outlist);
+				}
+				auto in_edges(const Vert& v) const {
+					return GRAPH_V1_STABLE_ADJACENCY_LIST_RANGE(v, _inlist);
+				}
+				auto in_degree(const Vert& v) const {
+					return GRAPH_V1_STABLE_ADJACENCY_LIST_DEGREE(v, _inlist);
+				}
+				auto insert_edge(Vert s, Vert t) {
+					auto e = _base_type::insert_edge(std::move(s), t);
+					GRAPH_V1_STABLE_ADJACENCY_LIST_INSERT_EDGE(std::move(s), e, _outlist);
+					GRAPH_V1_STABLE_ADJACENCY_LIST_INSERT_EDGE(std::move(t), e, _inlist);
+					return e;
+				}
+			private:
+				_alist_type _outlist;
+				_alist_type _inlist;
+			};
 		}
 	}
 }
