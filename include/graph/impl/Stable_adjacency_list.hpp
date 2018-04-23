@@ -29,10 +29,10 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class Order = std::size_t, class Size = std::size_t>
+			template <class Order_ = std::size_t, class Size_ = std::size_t>
 			struct Stable_out_adjacency_list :
-				Stable_edge_list<Order, Size> {
-				using _base_type = Stable_edge_list<Order, Size>;
+				Stable_edge_list<Order_, Size_> {
+				using _base_type = Stable_edge_list<Order_, Size_>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using _alist_type = GRAPH_V1_STABLE_ADJACENCY_LIST_TYPE;
@@ -51,10 +51,10 @@ namespace graph {
 			private:
 				_alist_type _alist;
 			};
-			template <class _Order = std::size_t, class _Size = std::size_t>
+			template <class Order_ = std::size_t, class Size_ = std::size_t>
 			struct Stable_in_adjacency_list :
-				Stable_edge_list<_Order, _Size> {
-				using _base_type = Stable_edge_list<_Order, _Size>;
+				Stable_edge_list<Order_, Size_> {
+				using _base_type = Stable_edge_list<Order_, Size_>;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
 				using _alist_type = GRAPH_V1_STABLE_ADJACENCY_LIST_TYPE;

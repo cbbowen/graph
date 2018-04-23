@@ -39,19 +39,19 @@ namespace graph {
 				std::pair<std::hash<typename Pair::first_type>, std::hash<typename Pair::second_type>> _hashers;
 			};
 
-			template <template <class, class, class...> class _Map>
+			template <template <class, class, class...> class Map_>
 			struct Adjacency_list_base {
 				using Order = std::size_t;
 				using Size = std::size_t;
-				using _Degree = std::size_t;
-				struct _Vert; // work around the fact that Vert can't be defined yet
-				using _elist_type = _Map<Size, _Vert>;
-				using _vlist_type = _Map<Order, _elist_type>;
+				using _degree_type = std::size_t;
+				struct _vert_type; // work around the fact that Vert can't be defined yet
+				using _elist_type = Map_<Size, _vert_type>;
+				using _vlist_type = Map_<Order, _elist_type>;
 				using Vert = map_iterator_wrapper<typename _vlist_type::GRAPH_V1_ADJACENCY_LIST_VERT_ITERATOR>;
-				struct _Vert : Vert {};
-				using _Edge = map_iterator_wrapper<typename _elist_type::const_iterator>;
-				struct Edge : std::pair<Vert, _Edge> {
-					using _base_type = std::pair<Vert, _Edge>;
+				struct _vert_type : Vert {};
+				using _edge_type = map_iterator_wrapper<typename _elist_type::const_iterator>;
+				struct Edge : std::pair<Vert, _edge_type> {
+					using _base_type = std::pair<Vert, _edge_type>;
 					using _base_type::_base_type;
 					template <class Char, class Traits>
 					friend decltype(auto) operator<<(std::basic_ostream<Char, Traits>& s, const Edge& e) {
@@ -82,7 +82,7 @@ namespace graph {
 								return Edge{v_, std::move(eit)};
 							});
 				}
-				static _Degree _degree(const Vert& v) {
+				static _degree_type _degree(const Vert& v) {
 					return v._it->second.size();
 				}
 				auto edges() const {
@@ -122,7 +122,7 @@ namespace graph {
 					auto kit = GRAPH_V1_ADJACENCY_LIST_REMOVE_CONST(k._it);
 					auto&& es = kit->second;
 					return Edge{std::move(k),
-						es.emplace_hint(es.end(), _elast++, _Vert{std::move(v)})};
+						es.emplace_hint(es.end(), _elast++, _vert_type{std::move(v)})};
 				}
 				auto erase_edge(const Edge& e) {
 					for (auto& m : _emap_tracker.trackees())
@@ -190,7 +190,7 @@ namespace graph {
 						_map._clear();
 					}
 				private:
-					persistent_map_iterator_map<_Edge, T> _map;
+					persistent_map_iterator_map<_edge_type, T> _map;
 				};
 				template <class T>
 				using Edge_map = tracked<_Persistent_edge_map<T>, erasable_base<Edge>>;
@@ -220,7 +220,7 @@ namespace graph {
 						return _map.exchange(e.second, std::forward<U>(u));
 					}
 				private:
-					ephemeral_map_iterator_map<_Edge, T> _map;
+					ephemeral_map_iterator_map<_edge_type, T> _map;
 				};
 				template <class T>
 				auto ephemeral_edge_map(T default_) const {
@@ -246,13 +246,13 @@ namespace graph {
 				tracker<erasable_base<Edge>> _emap_tracker;
 			};
 
-			template <template <class, class, class...> class _Map = std::map>
-			struct Out_adjacency_list : Adjacency_list_base<_Map> {
-				using _base_type = Adjacency_list_base<_Map>;
+			template <template <class, class, class...> class Map_ = std::map>
+			struct Out_adjacency_list : Adjacency_list_base<Map_> {
+				using _base_type = Adjacency_list_base<Map_>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using Out_degree = typename _base_type::_Degree;
+				using Out_degree = typename _base_type::_degree_type;
 				static auto out_edges(const Vert& v) {
 					return _base_type::_vert_edges(v);
 				}
@@ -270,13 +270,13 @@ namespace graph {
 				}
 			};
 
-			template <template <class, class, class...> class _Map = std::map>
-			struct In_adjacency_list : Adjacency_list_base<_Map> {
-				using _base_type = Adjacency_list_base<_Map>;
+			template <template <class, class, class...> class Map_ = std::map>
+			struct In_adjacency_list : Adjacency_list_base<Map_> {
+				using _base_type = Adjacency_list_base<Map_>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using In_degree = typename _base_type::_Degree;
+				using In_degree = typename _base_type::_degree_type;
 				static auto in_edges(const Vert& v) {
 					return _base_type::_vert_edges(v);
 				}
