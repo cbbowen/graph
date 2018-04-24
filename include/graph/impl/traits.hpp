@@ -14,8 +14,12 @@ namespace graph {
 			//   map_type => map(..) (via constructor)
 
 			// Canonical place to read graph vertex traits.
-			template <class G, class = void>
-			struct Verts {
+			template <class G, class = void> struct Verts {};
+			template <class G>
+			struct Verts<G,
+				std::void_t<
+					typename G::Vert,
+					typename G::Order>> {
 				using value_type = typename G::Vert;
 				using size_type = typename G::Order;
 				static decltype(auto) range(const G& g) {
@@ -85,8 +89,12 @@ namespace graph {
 			};
 
 			// Canonical place to read graph edge traits.
+			template <class G, class = void> struct Edges {};
 			template <class G>
-			struct Edges {
+			struct Edges<G,
+				std::void_t<
+					typename G::Edge,
+					typename G::Size>> {
 				using value_type = typename G::Edge;
 				using size_type = typename G::Size;
 				static decltype(auto) range(const G& g) {
@@ -172,8 +180,13 @@ namespace graph {
 			};
 
 			// Canonical place to read graph outgoing edge traits.
+			template <class G, class = void> struct Out_edges {};
 			template <class G>
-			struct Out_edges {
+			struct Out_edges<G,
+				std::void_t<
+					typename Verts<G>::value_type,
+					typename Edges<G>::value_type,
+					typename G::Out_degree>> {
 				using key_type = typename Verts<G>::value_type;
 				using value_type = typename Edges<G>::value_type;
 				using size_type = typename G::Out_degree;
@@ -205,8 +218,13 @@ namespace graph {
 			};
 
 			// Canonical place to read graph incoming edge traits.
+			template <class G, class = void> struct In_edges {};
 			template <class G>
-			struct In_edges {
+			struct In_edges<G,
+				std::void_t<
+					typename Verts<G>::value_type,
+					typename Edges<G>::value_type,
+					typename G::In_degree>> {
 				using key_type = typename Verts<G>::value_type;
 				using value_type = typename Edges<G>::value_type;
 				using size_type = typename G::In_degree;
@@ -279,6 +297,15 @@ namespace graph {
 				}
 			};
 
+			template <class G, class = void> struct is_out_edge_graph : std::false_type {};
+			template <class G> struct is_out_edge_graph<G, std::void_t<typename Out_edges<G>::value_type>> : std::true_type {};
+			template <class G> constexpr bool is_out_edge_graph_v = is_out_edge_graph<G>{}();
+
+			template <class G, class = void> struct is_in_edge_graph : std::false_type {};
+			template <class G> struct is_in_edge_graph<G, std::void_t<typename In_edges<G>::value_type>> : std::true_type {};
+			template <class G> constexpr bool is_in_edge_graph_v = is_in_edge_graph<G>{}();
+
+			// Adjacency tags
 			struct Out {};
 			struct In {};
 
