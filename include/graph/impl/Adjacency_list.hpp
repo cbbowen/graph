@@ -5,6 +5,7 @@
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/to_container.hpp>
 
 #include "unordered_set.hpp"
 #include "map_iterator_wrapper.hpp"
@@ -108,7 +109,7 @@ namespace graph {
 				} // LCOV_EXCL_LINE (unreachable)
 				// precondition: `v` must be unreachable from other vertices
 				void erase_vert(const Vert& v) {
-#ifndef NDEBUG
+#if GRAPH_CHECK_PRECONDITIONS
 					for (auto e : edges())
 						if (_edge_cokey(e) == v && _edge_key(e) != v)
 							throw precondition_unmet("bad edge adjacent to vertex");
@@ -331,12 +332,12 @@ namespace graph {
 				void erase_vert(const Vert& v) {
 					auto out_edges = std::move(_alist[v].first)._untracked()._raw();
 					auto in_edges = std::move(_alist[v].second)._untracked()._raw();
-					for (auto e : out_edges) {
-						_base_type::erase_edge(e);
+					for (auto e : ranges::to_vector(std::move(out_edges))) {
 						// This is necessary to handle to self-edges
 						in_edges.erase(e);
+						_base_type::erase_edge(e);
 					}
-					for (auto e : in_edges)
+					for (auto e : ranges::to_vector(std::move(in_edges)))
 						_base_type::erase_edge(e);
 					_base_type::erase_vert(v);
 				}

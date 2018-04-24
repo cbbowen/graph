@@ -11,20 +11,17 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-			template <class Adjacency, class G, class WM,
-				class D = std::decay_t<std::result_of_t<const WM&(Edge<G>)>>,
-				class Combine = std::plus<>, class Compare = std::less<>>
+			template <class Adjacency, class G, class Weight, class Compare, class Combine, class D>
 			std::pair<
 				Subtree<traits::Reverse_adjacency<Adjacency>, G>,
 				Vert_map<G, D>>
-			_dijkstra(const G& g, Vert<G> s, const WM& weight,
-				const Combine& combine = {}, const Compare& compare = {},
-				D zero = {}, D inf = std::numeric_limits<D>::max()) {
+			_dijkstra(const G& g, Vert<G> s, const Weight& weight,
+				const Compare& compare, const Combine& combine,
+				D zero, D inf) {
 				using Verts = traits::Verts<G>;
-				using Edges = traits::Edges<G>;
 				auto closed = Verts::ephemeral_set(g);
 				auto tree = Subtree<traits::Reverse_adjacency<Adjacency>, G>(g, s);
-				auto distances = Verts::map(g, inf);
+				auto distance = Verts::map(g, inf);
 				using pair_type = std::pair<D, Vert<G>>;
 				struct queue_compare {
 					const Compare& compare;
@@ -34,7 +31,7 @@ namespace graph {
 					}
 				};
 				std::priority_queue<pair_type, std::vector<pair_type>, queue_compare> queue(queue_compare{compare});
-				distances[s] = zero;
+				distance[s] = zero;
 				queue.emplace(zero, s);
 				while (!queue.empty()) {
 					auto [d, v] = queue.top();
@@ -43,17 +40,17 @@ namespace graph {
 						continue;
 					for (auto e : traits::Adjacent_edges<Adjacency, G>::range(g, v)) {
 						auto u = traits::adjacency_cokey<Adjacency, G>(g, e);
-#ifdef NDEBUG
+#if !GRAPH_CHECK_PRECONDITIONS
 						// optimization not required for correctness but skips checks below
 						if (closed.contains(u))
 							continue;
 #endif
 						auto c = combine(d, weight(e));
-#ifndef NDEBUG
+#if GRAPH_CHECK_PRECONDITIONS
 						if (compare(c, d))
 							throw precondition_unmet("negative weight edge");
 #endif
-						decltype(auto) du = distances[u];
+						decltype(auto) du = distance[u];
 						if (compare(c, du)) {
 							assert(!closed.contains(u)); // sanity check which should never fail
 							du = c;
@@ -62,20 +59,30 @@ namespace graph {
 						}
 					}
 				}
-				return std::pair(tree, distances);
+				return std::pair(tree, distance);
 			}
 		}
 		template <class Impl>
-		template <class... Args>
-		auto Out_edge_graph<Impl>::shortest_paths_from(Args&&... args) const {
-			auto [tree, distance] = impl::_dijkstra<impl::traits::Out>(this->_impl(), std::forward<Args>(args)...);
-			return std::make_pair(Graph(std::move(tree)), std::move(distance));
+		template <class Weight, class Compare, class Combine>
+		auto Out_edge_graph<Impl>::shortest_paths_from(const Vert& s, const Weight& weight,
+			const Compare& compare, const Combine& combine) const {
+			// TODO: Convert these to parameters
+			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
+			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
+
+			auto [tree, distance] = impl::_dijkstra<impl::traits::Out>(this->_impl(), s, weight, compare, combine, zero, inf);
+			return std::make_pair(_wrap_graph(std::move(tree)), std::move(distance));
 		}
 		template <class Impl>
-		template <class... Args>
-		auto In_edge_graph<Impl>::shortest_paths_to(Args&&... args) const {
-			auto [tree, distance] = impl::_dijkstra<impl::traits::In>(this->_impl(), std::forward<Args>(args)...);
-			return std::make_pair(Graph(std::move(tree)), std::move(distance));
+		template <class Weight, class Compare, class Combine>
+		auto In_edge_graph<Impl>::shortest_paths_to(const Vert& t, const Weight& weight,
+			const Compare& compare, const Combine& combine) const {
+			// TODO: Convert these to parameters
+			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
+			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
+
+			auto [tree, distance] = impl::_dijkstra<impl::traits::In>(this->_impl(), t, weight, compare, combine, zero, inf);
+			return std::make_pair(_wrap_graph(std::move(tree)), std::move(distance));
 		}
 	}
 }

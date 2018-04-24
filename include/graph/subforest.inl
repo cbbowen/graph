@@ -10,13 +10,13 @@ namespace graph {
 		template <class Adjacency>
 		auto Graph<Impl>::_subforest() const {
 			using Subforest_impl = impl::Subforest<Adjacency, Impl>;
-			return Graph(Subforest_impl(this->_impl()));
+			return _wrap_graph(Subforest_impl(this->_impl()));
 		}
 		template <class Impl>
 		template <class Adjacency>
 		auto Graph<Impl>::_subtree(Vert root) const {
 			using Subtree_impl = impl::Subtree<Adjacency, Impl>;
-			return Graph(Subtree_impl(this->_impl(), std::move(root)));
+			return _wrap_graph(Subtree_impl(this->_impl(), std::move(root)));
 		}
 		namespace impl {
 			template <class Adjacency, class G, class WM, class Compare>
@@ -57,12 +57,12 @@ namespace graph {
 		template <class Impl>
 		template <class WM, class Compare>
 		auto Out_edge_graph<Impl>::minimum_tree_reachable_from(const Vert& s, const WM& weight, const Compare& compare) const {
-			return impl::_prim<impl::traits::Out>(this->_impl(), s, weight, compare);
+			return _wrap_graph(impl::_prim<impl::traits::Out>(this->_impl(), s, weight, compare));
 		}
 		template <class Impl>
 		template <class WM, class Compare>
 		auto In_edge_graph<Impl>::minimum_tree_reaching_to(const Vert& t, const WM& weight, const Compare& compare) const {
-			return impl::_prim<impl::traits::In>(this->_impl(), t, weight, compare);
+			return _wrap_graph(impl::_prim<impl::traits::In>(this->_impl(), t, weight, compare));
 		}
 	}
 }

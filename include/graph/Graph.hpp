@@ -10,6 +10,8 @@
 // https://github.com/catchorg/Catch2
 
 #include <functional>
+#include <vector>
+#include <optional>
 
 #include "impl/traits.hpp"
 
@@ -153,16 +155,16 @@ namespace graph {
 			// Constructs a new view of this graph as an empty subforest.
 			template <class Adjacency> auto _subforest() const;
 			/// Construct a new view of this graph as an empty subforest with edges up to roots.
-			auto out_subforest() const { return _subforest<impl::traits::Out_edges>(); }
+			auto out_subforest() const { return _subforest<impl::traits::Out>(); }
 			/// Construct a new view of this graph as an empty subforest with edges down to leaves.
-			auto in_subforest() const { return _subforest<impl::traits::In_edges>(); }
+			auto in_subforest() const { return _subforest<impl::traits::In>(); }
 
 			// Constructs a new view of this graph as an empty subtree.
 			template <class Adjacency> auto _subtree(Vert root) const;
 			/// Construct a new view of this graph as an empty tree with edges up to a given root.
-			auto out_subtree(Vert root) const { return _subtree<impl::traits::Out_edges>(); }
+			auto out_subtree(Vert target) const { return _subtree<impl::traits::Out>(target); }
 			/// Construct a new view of this graph as an empty tree with edges down from a given root.
-			auto in_subtree(Vert root) const { return _subtree<impl::traits::In_edges>(); }
+			auto in_subtree(Vert source) const { return _subtree<impl::traits::In>(source); }
 
 			template <class... Args>
 			auto dot_format(Args&&...) const;
@@ -241,8 +243,9 @@ namespace graph {
 				return Out_edges::size(this->_impl(), v);
 			}
 
-			template <class... Args>
-			auto shortest_paths_from(Args&&... args) const;
+			template <class Weight, class Compare = std::less<>, class Combine = std::plus<>>
+			auto shortest_paths_from(const Vert& s, const Weight& weight,
+				const Compare& compare = {}, const Combine& combine = {}) const;
 
 			auto reverse_view() const;
 			// auto scc() const;
@@ -272,8 +275,9 @@ namespace graph {
 				return In_edges::size(this->_impl(), v);
 			}
 
-			template <class... Args>
-			auto shortest_paths_to(Args&&... args) const;
+			template <class Weight, class Compare = std::less<>, class Combine = std::plus<>>
+			auto shortest_paths_to(const Vert& t, const Weight& weight,
+				const Compare& compare = {}, const Combine& combine = {}) const;
 
 			auto reverse_view() const;
 			// auto scc() const;
@@ -299,7 +303,15 @@ namespace graph {
 			Bi_edge_graph(Args&&... args) :
 				_base_type(std::forward<Args>(args)...) {
 			}
+
+			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
+			auto shortest_path(const Vert& s, const Vert& t, const WM& weight,
+				const Compare& compare = {}, const Combine& combine = {}) const
+				-> std::optional<std::vector<Edge>>;
 		};
+
+		template <class Impl>
+		Bi_edge_graph(Impl) -> Bi_edge_graph<Impl>;
 
 		template <class Impl>
 		class Graph<Graph<Impl>> {
@@ -312,6 +324,18 @@ namespace graph {
 
 		template <class Impl>
 		class Graph<In_edge_graph<Impl>> : Graph<Graph<Impl>> {};
+
+		template <class Impl>
+		auto _wrap_graph(Impl&& impl) {
+			constexpr bool out = impl::traits::is_out_edge_graph_v<Impl>;
+			constexpr bool in = impl::traits::is_in_edge_graph_v<Impl>;
+			using Wrapper =
+				std::conditional_t<out && in, Bi_edge_graph<Impl>,
+				std::conditional_t<out, Out_edge_graph<Impl>,
+				std::conditional_t<in, In_edge_graph<Impl>,
+				Graph<Impl>>>>;
+			return Wrapper(std::forward<Impl>(impl));
+		}
 	}
 }
 
@@ -321,4 +345,5 @@ namespace graph {
 #include "reverse.inl"
 #include "subforest.inl"
 //#include "scc.inl"
+#include "bidirectional_search.inl"
 #include "format.inl"

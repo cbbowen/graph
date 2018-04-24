@@ -18,16 +18,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\Adjacency_list.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test\Edge_list.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\test\Stable_adjacency_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\Adjacency_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\Atomic_adjacency_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\Edge_list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\test\Stable_edge_list.cpp">
@@ -125,6 +128,12 @@
     <ClInclude Include="..\include\graph\Stable_edge_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\graph\Path.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\Graph_tester.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\graph\dijkstra.inl">
@@ -143,6 +152,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\subforest.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\include\graph\bidirectional_search.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

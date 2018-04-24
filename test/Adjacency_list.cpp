@@ -115,6 +115,7 @@ SCENARIO("out-adjacency lists behave properly", "[Out_adjacency_list]") {
 			// If the tail of an edge is in the tree, then so must be the head
 			for (auto e : g.edges())
 				REQUIRE((!tree.in_tree(g.tail(e)) || tree.in_tree(g.head(e))));
+			// TODO: Use the cut lemma to verify this tree has minimal weight
 		}
 	}
 }
@@ -234,6 +235,7 @@ SCENARIO("in-adjacency lists behave properly", "[In_adjacency_list]") {
 			// If the head of an edge is in the tree, then so must be the tail
 			for (auto e : g.edges())
 				REQUIRE((!tree.in_tree(g.head(e)) || tree.in_tree(g.tail(e))));
+			// TODO: Use the cut lemma to verify this tree has minimal weight
 		}
 	}
 }
