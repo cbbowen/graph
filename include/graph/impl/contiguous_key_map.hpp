@@ -3,20 +3,28 @@
 #include <utility>
 #include <type_traits>
 #include <vector>
+#include <memory>
 
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
 			template <class K, class T>
 			struct ephemeral_contiguous_key_map {
-				using _container_type = std::vector<T>;
+				// One might reasonably wonder why we don't just use `std::vector<T>` here.  The reason is to make this usable with types that aren't copyable or even movable, like `std::atomic<...>`.
+				using _container_type = std::unique_ptr<T[]>;
 				using key_type = K;
 				using inner_key_type = typename key_type::key_type;
 				static_assert(std::is_integral_v<inner_key_type>);
-				using const_reference = typename _container_type::const_reference;
-				using reference = typename _container_type::reference;
-				ephemeral_contiguous_key_map(std::size_t size, T default_ = {}) :
-					_map(size, std::move(default_)) {
+				using const_reference = const T&;
+				using reference = T&;
+				ephemeral_contiguous_key_map(std::size_t size) :
+					// Note that the trailing parentheses cause each element to be value-initialized
+					_map(new T[size]()) {
+				}
+				ephemeral_contiguous_key_map(std::size_t size, T default_) :
+					_map(new T[size]) {
+					for (std::size_t i = 0; i < size; ++i)
+						new(&_map[i]) T(default_);
 				}
 				const_reference operator()(const key_type& k) const {
 					auto i = k.key();

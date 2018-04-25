@@ -9,7 +9,7 @@ namespace graph {
 			template <class I, class = void>
 			struct integral_wrapper {
 				using key_type = I;
-				using flag_type = char; // Why is this `char` instead of `bool`?  `std::vector<bool>`, that's why.
+				using flag_type = bool;
 				explicit constexpr integral_wrapper(I i, flag_type flag = static_cast<flag_type>(true)) : _i(i) {
 					assert(i != std::numeric_limits<I>::max());
 					assert(flag);

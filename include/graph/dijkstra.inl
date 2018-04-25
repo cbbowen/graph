@@ -59,7 +59,7 @@ namespace graph {
 						}
 					}
 				}
-				return std::pair(tree, distance);
+				return std::pair(std::move(tree), std::move(distance));
 			}
 		}
 		template <class Impl>
