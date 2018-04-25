@@ -71,8 +71,8 @@ namespace graph {
 			std::priority_queue<pair_type, std::vector<pair_type>, queue_compare>
 				s_queue(queue_compare{ compare }), t_queue(queue_compare{ compare });
 
-			auto s_closed = this->vert_set(), t_closed = this->vert_set();
-			auto s_distance = this->vert_map(inf), t_distance = this->vert_map(inf);
+			auto s_closed = this->ephemeral_vert_set(), t_closed = this->ephemeral_vert_set();
+			auto s_distance = this->ephemeral_vert_map(inf), t_distance = this->ephemeral_vert_map(inf);
 			auto s_tree = this->in_subtree(s);
 			auto t_tree = this->out_subtree(t);
 
