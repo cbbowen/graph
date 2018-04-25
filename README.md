@@ -96,16 +96,18 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 |                          | ** `assign(K k, T t)`                           | Associate `t` with `k`
 |                          | ** `exchange(K k, T t) ⟶ T`                    | Associate `t` with `k` and return the old value
 
-\* Advanced API that should be avoided except in generic code or when performance is critical.
-
-\** Experimental API that may change without notice.
-
 | Algorithm                  | Usage                                       | Result                               | Semantics
 | --------------------------:|:------------------------------------------- |:------------------------------------:|:----------
 | Dijkstra's                 | `g.shortest_paths_from(v, w, ...)`          | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` from `v` to all other reachable vertices
 |                            | `g.shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
 | Prim's                     | `g.minimum_tree_reachable_from(v, w, ...)`  | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
 |                            | `g.minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
+| Bidirectional Search       | ** `g.shortest_path(s, t, w, ...)`             | `optional<vector<Edge>>`             | Finds path with minimum total edge weights `w(e)` from `s` to `t`
+|                            | ** `g.parallel_shortest_path(s, t, w, ...)`    | `optional<vector<Edge>>`             | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
+
+\* Advanced API that should be avoided except in generic code or when performance is critical.
+
+\** Experimental API that may change without notice.
 
 # Contributing
 
