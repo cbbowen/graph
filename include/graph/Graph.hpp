@@ -308,6 +308,10 @@ namespace graph {
 			auto shortest_path(const Vert& s, const Vert& t, const WM& weight,
 				const Compare& compare = {}, const Combine& combine = {}) const
 				-> std::optional<std::vector<Edge>>;
+			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
+			auto parallel_shortest_path(const Vert& s, const Vert& t, const WM& weight,
+				const Compare& compare = {}, const Combine& combine = {}) const
+				-> std::optional<std::vector<Edge>>;
 		};
 
 		template <class Impl>
@@ -346,4 +350,5 @@ namespace graph {
 #include "subforest.inl"
 //#include "scc.inl"
 #include "bidirectional_search.inl"
+#include "parallel_bidirectional_search.inl"
 #include "format.inl"

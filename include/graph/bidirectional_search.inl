@@ -4,6 +4,7 @@
 #include <functional>
 #include <queue>
 #include <optional>
+#include <vector>
 #include <algorithm>
 #include <cassert>
 

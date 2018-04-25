@@ -266,6 +266,37 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 				}
 			}
 		}
+		WHEN("searching for the shortest path between vertices in parallel") {
+			auto weight = g.edge_map(0.0);
+			const double epsilon = 0.001;
+			for (auto e : g.edges())
+				weight[e] = std::uniform_real_distribution(epsilon, 1.0)(r);
+			for (auto s : g.verts()) {
+				auto [tree, distance] = g.shortest_paths_from(s, weight);
+				for (auto t : g.verts()) {
+					auto path = g.parallel_shortest_path(s, t, weight);
+					if (s == t) {
+						REQUIRE(path.has_value());
+						REQUIRE(path.value().empty());
+					} else if (path) {
+						// Verify the result is actually a path
+						for (auto i = 1; i < path.value().size(); ++i)
+							REQUIRE(g.head(path.value()[i - 1]) == g.tail(path.value()[i]));
+						// Verify the path starts and end in the correct places
+						REQUIRE(g.tail(path.value().front()) == s);
+						REQUIRE(g.head(path.value().back()) == t);
+						// Verify this is the shortest path against Dijkstra's
+						auto path_distance = std::accumulate(
+							path.value().begin(), path.value().end(), 0.0,
+							[&](double d, auto e) { return d + weight(e); });
+						REQUIRE(path_distance <= distance(t) + epsilon * g.order());
+					} else {
+						// Verify no path exists
+						REQUIRE(!tree.in_tree(t));
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -376,6 +407,13 @@ TEST_CASE("stable bidirectional adjacency list", "[benchmark]") {
 			weight[e] = std::uniform_real_distribution<double>{}(r);
 		auto s = g.random_vert(r), t = g.random_vert(r);
 		auto path = g.shortest_path(s, t, weight);
+	}
+	BENCHMARK("find shortest path in parallel") {
+		auto weight = g.edge_map(0.0);
+		for (auto e : g.edges())
+			weight[e] = std::uniform_real_distribution<double>{}(r);
+		auto s = g.random_vert(r), t = g.random_vert(r);
+		auto path = g.parallel_shortest_path(s, t, weight);
 	}
 }
 #endif

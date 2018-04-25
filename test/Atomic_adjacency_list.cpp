@@ -5,13 +5,6 @@
 
 #include <range/v3/distance.hpp>
 
-#if defined(__has_include) && !__has_include(<omp.h>)
-#	undef _OPENMP
-#endif
-#ifdef _OPENMP
-#	include <omp.h>
-#endif
-
 SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_list]") {
 	using G = graph::Atomic_out_adjacency_list;
 	GIVEN("an empty graph") {
