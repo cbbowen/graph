@@ -50,15 +50,11 @@ namespace graph {
 				tracked(tracked&& other) :
 					tracked(other._impl, static_cast<Derived&&>(other)) {
 				}
-				void _untrack() {
+				~tracked() {
 					if (auto p = GRAPH_V1_IMPL_TRACKEE_LOCK_PTR(_impl))
 						p->erase(this);
 				}
-				~tracked() {
-					_untrack();
-				}
 				Derived _untracked() && {
-					_untrack();
 					return Derived(std::move(*this));
 				}
 			private:
