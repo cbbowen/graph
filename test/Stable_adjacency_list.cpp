@@ -275,6 +275,7 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 	static const std::size_t order = 1000;
 	static const std::size_t size = 1000;
 	std::mt19937 r;
+
 	BENCHMARK("insert vertices") {
 		G g;
 		for (std::size_t i = 0; i < order; ++i)
@@ -315,12 +316,66 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 				++total_degrees;
 		REQUIRE(total_degrees == size);
 	}
-
 	BENCHMARK("find single-source shortest paths") {
 		auto weight = g.edge_map(0.0);
 		for (auto e : g.edges())
 			weight[e] = std::uniform_real_distribution<double>{}(r);
 		auto [tree, distances] = g.shortest_paths_from(g.random_vert(r), weight);
+	}
+}
+
+TEST_CASE("stable bidirectional adjacency list", "[benchmark]") {
+	using G = graph::Stable_bi_adjacency_list;
+	static const std::size_t order = 1000;
+	static const std::size_t size = 1000;
+	std::mt19937 r;
+
+	BENCHMARK("insert vertices") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		REQUIRE(g.order() == order);
+	}
+	BENCHMARK("insert self-edges") {
+		G g;
+		auto v = g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i)
+			g.insert_edge(v, v);
+		REQUIRE(g.size() == size);
+	}
+	BENCHMARK("insert random edges") {
+		G g;
+		for (std::size_t i = 0; i < order; ++i)
+			g.insert_vert();
+		for (std::size_t i = 0; i < size; ++i) {
+			auto u = g.random_vert(r), v = g.random_vert(r);
+			g.insert_edge(u, v);
+		}
+		REQUIRE(g.order() == order);
+		REQUIRE(g.size() == size);
+	}
+
+	G g;
+	for (std::size_t i = 0; i < order; ++i)
+		g.insert_vert();
+	for (std::size_t i = 0; i < size; ++i) {
+		auto u = g.random_vert(r), v = g.random_vert(r);
+		g.insert_edge(u, v);
+	}
+
+	BENCHMARK("query adjacencies") {
+		std::size_t total_degrees = 0;
+		for (auto v : g.verts())
+			for (auto e : g.out_edges(v))
+				++total_degrees;
+		REQUIRE(total_degrees == size);
+	}
+	BENCHMARK("find shortest path") {
+		auto weight = g.edge_map(0.0);
+		for (auto e : g.edges())
+			weight[e] = std::uniform_real_distribution<double>{}(r);
+		auto s = g.random_vert(r), t = g.random_vert(r);
+		auto path = g.shortest_path(s, t, weight);
 	}
 }
 #endif
