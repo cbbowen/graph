@@ -3,7 +3,6 @@
 #include <limits>
 #include <functional>
 #include <queue>
-#include <optional>
 #include <vector>
 #include <algorithm>
 #include <cassert>
@@ -55,8 +54,7 @@ namespace graph {
 		template <class Impl>
 		template <class Weight, class Compare, class Combine>
 		auto Bi_edge_graph<Impl>::shortest_path(const Vert& s, const Vert& t, const Weight& weight,
-			const Compare& compare, const Combine& combine) const
-			-> std::optional<std::vector<Edge>> {
+			const Compare& compare, const Combine& combine) const -> Path {
 			// TODO: Convert these to parameters
 			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
 			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
@@ -96,11 +94,11 @@ namespace graph {
 			while (!done) {
 				if (t_queue.size() < s_queue.size()) {
 					if (t_queue.empty())
-						return std::nullopt;
+						return this->null_path();
 					expand_t();
 				} else {
 					if (s_queue.empty())
-						return std::nullopt;
+						return this->null_path();
 					expand_s();
 				}
 			}
@@ -113,11 +111,9 @@ namespace graph {
 				compare, total_distance);
 
 			// Construct path from trees
-			auto path = s_tree.path_from_root_to(rendezvous);
-			Vert v = rendezvous;
-			for (Edge e; (e = t_tree.out_edge_or_null(v)) != this->null_edge(); v = this->head(e))
-				path.push_back(e);
-			return path;
+			return this->concatenate_paths(
+				s_tree.path_from_root_to(rendezvous),
+				t_tree.path_to_root_from(rendezvous));
 		}
 	}
 }

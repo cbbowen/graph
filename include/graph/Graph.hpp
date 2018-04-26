@@ -14,6 +14,7 @@
 #include <optional>
 
 #include "impl/traits.hpp"
+#include "impl/Path.hpp"
 
 namespace graph {
 	inline namespace v1 {
@@ -78,6 +79,9 @@ namespace graph {
 			Vert null_vert() const {
 				return Verts::null(this->_impl());
 			}
+			bool is_null(const Vert& v) const {
+				return v == null_vert();
+			}
 
 			template <class T> using Vert_map =
 				typename Verts::template map_type<T>;
@@ -112,6 +116,9 @@ namespace graph {
 			Edge null_edge() const {
 				return Edges::null(this->_impl());
 			}
+			bool is_null(const Edge& e) const {
+				return e == null_edge();
+			}
 			Vert tail(const Edge& e) const {
 				return Edges::tail(this->_impl(), e);
 			}
@@ -139,6 +146,28 @@ namespace graph {
 			using Ephemeral_edge_set = typename Edges::ephemeral_set_type;
 			auto ephemeral_edge_set() const {
 				return Edges::ephemeral_set(this->_impl());
+			}
+
+			using Path = impl::Path<Impl>;
+			Path null_path() const { return Path(this->_impl()); }
+			template <class Edges = std::vector<Edge>>
+			Path path(Vert source, Edges&& edges = {}) const {
+				return Path(this->_impl(), std::move(source), std::forward<Edges>(edges));
+			}
+			Path concatenate_paths(Path&& p0, const Path& p1) const {
+				p0._concatenate(this->_impl(), p1);
+				return std::move(p0);
+			}
+			Path concatenate_paths(const Path& p0, const Path& p1) const {
+				return concatenate_paths(Path(p0), p1);
+			}
+			Vert source(const Path& path) const { return path._source(this->_impl()); }
+			Vert target(const Path& path) const { return path._target(this->_impl()); }
+			bool is_null(const Path& path) const {
+				return is_null(source(path));
+			}
+			bool is_trivial(const Path& path) const {
+				return path.is_trivial_or_null() && !is_null(path);
 			}
 
 			// Everything below this point should only be declared here and defined in their own .inl files.
@@ -199,6 +228,8 @@ namespace graph {
 			template <class T>
 			using Edge_map = typename G::template Edge_map<T>;
 			using Edge_set = typename G::Edge_set;
+
+			using Path = typename G::Path;
 		};
 
 		template <class G>
@@ -224,6 +255,9 @@ namespace graph {
 
 		template <class G>
 		using Edge_set = typename Traits<G>::Edge_set;
+
+		template <class G>
+		using Path = typename Traits<G>::Path;
 
 		template <class Impl>
 		class Out_edge_graph :
@@ -297,6 +331,7 @@ namespace graph {
 		public:
 			using Vert = typename _base_type::Vert;
 			using Edge = typename _base_type::Edge;
+			using Path = typename _base_type::Path;
 			// using _base_type::_base_type;
 			template <class... Args,
 				class = std::enable_if_t<std::is_constructible_v<_base_type, Args&&...>>>
@@ -306,12 +341,10 @@ namespace graph {
 
 			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
 			auto shortest_path(const Vert& s, const Vert& t, const WM& weight,
-				const Compare& compare = {}, const Combine& combine = {}) const
-				-> std::optional<std::vector<Edge>>;
+				const Compare& compare = {}, const Combine& combine = {}) const -> Path;
 			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
 			auto parallel_shortest_path(const Vert& s, const Vert& t, const WM& weight,
-				const Compare& compare = {}, const Combine& combine = {}) const
-				-> std::optional<std::vector<Edge>>;
+				const Compare& compare = {}, const Combine& combine = {}) const -> Path;
 		};
 
 		template <class Impl>
@@ -330,9 +363,13 @@ namespace graph {
 		class Graph<In_edge_graph<Impl>> : Graph<Graph<Impl>> {};
 
 		template <class Impl>
+		class Graph<Bi_edge_graph<Impl>> : Graph<Graph<Impl>> {};
+
+		template <class Impl>
 		auto _wrap_graph(Impl&& impl) {
-			constexpr bool out = impl::traits::is_out_edge_graph_v<Impl>;
-			constexpr bool in = impl::traits::is_in_edge_graph_v<Impl>;
+			constexpr bool
+				out = impl::traits::is_out_edge_graph_v<Impl>,
+				in = impl::traits::is_in_edge_graph_v<Impl>;
 			using Wrapper =
 				std::conditional_t<out && in, Bi_edge_graph<Impl>,
 				std::conditional_t<out, Out_edge_graph<Impl>,

@@ -102,8 +102,8 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 |                            | `g.shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
 | Prim's                     | `g.minimum_tree_reachable_from(v, w, ...)`  | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
 |                            | `g.minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
-| Bidirectional Search       | ** `g.shortest_path(s, t, w, ...)`             | `optional<vector<Edge>>`             | Finds path with minimum total edge weights `w(e)` from `s` to `t`
-|                            | ** `g.parallel_shortest_path(s, t, w, ...)`    | `optional<vector<Edge>>`             | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
+| Bidirectional Search       | ** `g.shortest_path(s, t, w, ...)`          | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t`
+|                            | ** `g.parallel_shortest_path(s, t, w, ...)` | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
 
 \* Advanced API that should be avoided except in generic code or when performance is critical.
 

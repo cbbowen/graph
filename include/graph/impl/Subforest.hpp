@@ -118,14 +118,14 @@ namespace graph {
 				_degree_type _key_degree(const Vert& v) const {
 					return (_edges(v) != null_edge()) ? 1 : 0;
 				}
-				std::vector<Edge> _key_path(Vert v) const {
+				std::pair<Vert, std::vector<Edge>> _key_path(Vert v) const {
 					std::vector<Edge> path;
 					for (Edge e; (e = _edges(v)) != null_edge(); path.push_back(e))
 						v = traits::adjacency_cokey<Adjacency>(_g, e);
-					return path;
+					return std::make_pair(v, path);
 				}
 
-			private:
+			protected:
 				std::reference_wrapper<const G> _g;
 				typename Verts::template ephemeral_map_type<Edge> _edges;
 				typename Edges::size_type _size = 0;
@@ -150,7 +150,8 @@ namespace graph {
 					return this->_key_degree(v);
 				}
 				auto path_to_root_from(const Vert& v) const {
-					return this->_key_path(v);
+					auto [u, edges] = this->_key_path(v);
+					return Path<G>(this->_g, v, std::move(edges));
 				}
 			};
 			template <class G>
@@ -171,9 +172,9 @@ namespace graph {
 					return this->_key_degree(v);
 				}
 				auto path_from_root_to(const Vert& v) const {
-					auto path = this->_key_path(v);
-					std::reverse(path.begin(), path.end());
-					return path;
+					auto [u, edges] = this->_key_path(v);
+					std::reverse(edges.begin(), edges.end());
+					return Path<G>(this->_g, std::move(u), std::move(edges));
 				}
 			};
 			template <class Adjacency, class G>

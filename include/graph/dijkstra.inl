@@ -46,10 +46,8 @@ namespace graph {
 							continue;
 #endif
 						auto c = combine(d, weight(e));
-#if GRAPH_CHECK_PRECONDITIONS
-						if (compare(c, d))
-							throw precondition_unmet("negative weight edge");
-#endif
+						check_precondition(!compare(c, d), "edges must have non-negative weights");
+
 						decltype(auto) du = distance[u];
 						if (compare(c, du)) {
 							assert(!closed.contains(u)); // sanity check which should never fail

@@ -245,19 +245,13 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 				for (auto t : g.verts()) {
 					auto path = g.shortest_path(s, t, weight);
 					if (s == t) {
-						REQUIRE(path.has_value());
-						REQUIRE(path.value().empty());
-					} else if (path) {
-						// Verify the result is actually a path
-						for (auto i = 1; i < path.value().size(); ++i)
-							REQUIRE(g.head(path.value()[i - 1]) == g.tail(path.value()[i]));
+						REQUIRE(g.is_trivial(path));
+					} else if (!g.is_null(path)) {
 						// Verify the path starts and end in the correct places
-						REQUIRE(g.tail(path.value().front()) == s);
-						REQUIRE(g.head(path.value().back()) == t);
+						REQUIRE(g.source(path) == s);
+						REQUIRE(g.target(path) == t);
 						// Verify this is the shortest path against Dijkstra's
-						auto path_distance = std::accumulate(
-							path.value().begin(), path.value().end(), 0.0,
-							[&](double d, auto e) { return d + weight(e); });
+						auto path_distance = path.total(weight);
 						REQUIRE(path_distance <= distance(t) + epsilon * g.order());
 					} else {
 						// Verify no path exists
@@ -276,19 +270,13 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 				for (auto t : g.verts()) {
 					auto path = g.parallel_shortest_path(s, t, weight);
 					if (s == t) {
-						REQUIRE(path.has_value());
-						REQUIRE(path.value().empty());
-					} else if (path) {
-						// Verify the result is actually a path
-						for (auto i = 1; i < path.value().size(); ++i)
-							REQUIRE(g.head(path.value()[i - 1]) == g.tail(path.value()[i]));
+						REQUIRE(g.is_trivial(path));
+					} else if (!g.is_null(path)) {
 						// Verify the path starts and end in the correct places
-						REQUIRE(g.tail(path.value().front()) == s);
-						REQUIRE(g.head(path.value().back()) == t);
+						REQUIRE(g.source(path) == s);
+						REQUIRE(g.target(path) == t);
 						// Verify this is the shortest path against Dijkstra's
-						auto path_distance = std::accumulate(
-							path.value().begin(), path.value().end(), 0.0,
-							[&](double d, auto e) { return d + weight(e); });
+						auto path_distance = path.total(weight);
 						REQUIRE(path_distance <= distance(t) + epsilon * g.order());
 					} else {
 						// Verify no path exists

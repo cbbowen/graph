@@ -111,8 +111,8 @@ namespace graph {
 				void erase_vert(const Vert& v) {
 #if GRAPH_CHECK_PRECONDITIONS
 					for (auto e : edges())
-						if (_edge_cokey(e) == v && _edge_key(e) != v)
-							throw precondition_unmet("bad edge adjacent to vertex");
+						check_precondition(_edge_cokey(e) != v || _edge_key(e) == v,
+							"bad edge adjacent to vertex");
 #endif
 					_esize -= _degree(v);
 					for (auto& m : _vmap_tracker.trackees())
