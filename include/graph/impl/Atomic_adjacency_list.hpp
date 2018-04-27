@@ -63,7 +63,7 @@ namespace graph {
 			};
 #endif
 			template <template <class> class Atomic_container = atomic_list>
-			struct _Atomic_adjacency_list {
+			struct Atomic_adjacency_list_base {
 				struct _enode;
 				using Edge = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_WRAPPER<_enode>;
 				using _alist_type = Atomic_container<Edge>;
@@ -82,7 +82,7 @@ namespace graph {
 
 				using Order = typename _vlist_type::size_type;
 				using Size = typename _elist_type::size_type;
-				using _Degree = typename _alist_type::size_type;
+				using _degree_type = typename _alist_type::size_type;
 
 				auto verts() const {
 					return ranges::view::all(_vlist) |
@@ -97,7 +97,7 @@ namespace graph {
 				static auto _vert_edges(const Vert& v) {
 					return ranges::view::all(v->_alist);
 				}
-				static _Degree _degree(const Vert& v) {
+				_degree_type _vert_degree(const Vert& v) const {
 					return v->_alist.conservative_size();
 				}
 				auto edges() const {
@@ -178,22 +178,23 @@ namespace graph {
 #endif
 			};
 
-			struct Atomic_out_adjacency_list : _Atomic_adjacency_list<> {
-				using _base_type = _Atomic_adjacency_list<>;
+			struct Atomic_out_adjacency_list :
+				Atomic_adjacency_list_base<> {
+				using _base_type = Atomic_adjacency_list_base<>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using Out_degree = typename _base_type::_Degree;
-				static inline auto out_edges(const Vert& v) {
+				using Out_degree = typename _base_type::_degree_type;
+				inline auto out_edges(const Vert& v) const {
 					return _base_type::_vert_edges(v);
 				}
-				static inline Out_degree out_degree(const Vert& v) {
-					return _base_type::_degree(v);
+				inline Out_degree out_degree(const Vert& v) const {
+					return _base_type::_vert_degree(v);
 				}
-				static inline auto tail(const Edge& e) {
+				inline auto tail(const Edge& e) const {
 					return _base_type::_edge_key(e);
 				}
-				static inline auto head(const Edge& e) {
+				inline auto head(const Edge& e) const {
 					return _base_type::_edge_cokey(e);
 				}
 				inline auto insert_edge(Vert s, Vert t) {
@@ -201,22 +202,23 @@ namespace graph {
 				}
 			};
 
-			struct Atomic_in_adjacency_list : _Atomic_adjacency_list<> {
-				using _base_type = _Atomic_adjacency_list<>;
+			struct Atomic_in_adjacency_list :
+				Atomic_adjacency_list_base<> {
+				using _base_type = Atomic_adjacency_list_base<>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
-				using In_degree = typename _base_type::_Degree;
-				static inline auto in_edges(const Vert& v) {
+				using In_degree = typename _base_type::_degree_type;
+				inline auto in_edges(const Vert& v) const {
 					return _base_type::_vert_edges(v);
 				}
-				static inline In_degree in_degree(const Vert& v) {
-					return _base_type::_degree(v);
+				inline In_degree in_degree(const Vert& v) const {
+					return _base_type::_vert_degree(v);
 				}
-				static inline auto tail(const Edge& e) {
+				inline auto tail(const Edge& e) const {
 					return _base_type::_edge_cokey(e);
 				}
-				static inline auto head(const Edge& e) {
+				inline auto head(const Edge& e) const {
 					return _base_type::_edge_key(e);
 				}
 				inline auto insert_edge(Vert s, Vert t) {

@@ -6,6 +6,7 @@
 #include <limits>
 #include <functional>
 #include <algorithm>
+#include <exception>
 #include <queue>
 #include <vector>
 #include <cassert>

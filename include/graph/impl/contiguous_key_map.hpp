@@ -17,7 +17,7 @@ namespace graph {
 				static_assert(std::is_integral_v<inner_key_type>);
 				using const_reference = const T&;
 				using reference = T&;
-				ephemeral_contiguous_key_map(std::size_t size) :
+				explicit ephemeral_contiguous_key_map(std::size_t size) :
 					// Note that the trailing parentheses cause each element to be value-initialized
 					_map(new T[size]()) {
 				}
@@ -53,8 +53,12 @@ namespace graph {
 				static_assert(std::is_integral_v<inner_key_type>);
 				using const_reference = const T&;
 				using reference = typename _container_type::reference;
-				persistent_contiguous_key_map(T default_ = {}) :
+				explicit persistent_contiguous_key_map(T default_ = {}) :
 					_default(std::move(default_)) {
+				}
+				persistent_contiguous_key_map(std::size_t size, T default_) :
+					persistent_contiguous_key_map(std::move(default_)) {
+					reserve(size);
 				}
 				void reserve(typename _container_type::size_type capacity) {
 					// The motivation for this method is to enable parallel access to independent values, so `_map.reserve(capacity)` isn't sufficient

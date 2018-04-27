@@ -16,7 +16,7 @@ namespace graph {
 				using Size = Size_;
 				using Edge = integral_wrapper<Size, struct edge_tag>;
 				auto edges() const {
-					return ranges::view::iota(Size{}, _elist.size()) |
+					return ranges::view::iota(Size{}, size()) |
 						ranges::view::transform(construct<Edge>);
 				}
 				auto null_edge() const noexcept {
@@ -40,7 +40,7 @@ namespace graph {
 				using Edge_map = persistent_contiguous_key_map<Edge, T>;
 				template <class T>
 				auto edge_map(T default_) const {
-					return Edge_map<T>(std::move(default_));
+					return Edge_map<T>(size(), std::move(default_));
 				} // LCOV_EXCL_LINE (unreachable)
 				template <class T>
 				using Ephemeral_edge_map = ephemeral_contiguous_key_map<Edge, T>;
