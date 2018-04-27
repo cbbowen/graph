@@ -97,28 +97,28 @@ namespace graph {
 			t_distance[t] = zero;
 
 			// Perform bidirectional search steps in parallel on two threads
-			std::atomic<bool> done(false);
+			alignas(64) std::atomic<bool> t_done{false}, s_done{false};
 			#pragma omp parallel num_threads(2)
 			{
 				#pragma omp single nowait
 				{
 					auto s_queue = queue_type(queue_compare{ compare });
 					s_queue.emplace(zero, s);
-					while (!done.load(std::memory_order_relaxed) && !s_queue.empty() &&
+					while (!t_done.load(std::memory_order_relaxed) && !s_queue.empty() &&
 						!impl::_atomic_bidirectional_search_step<impl::traits::Out>(this->_impl(),
 							s_queue, s_closed, t_closed, weight, s_distance, s_tree, compare, combine))
 						;
-					done.store(true);
+					s_done.store(true);
 				}
 				#pragma omp single nowait
 				{
 					auto t_queue = queue_type(queue_compare{ compare });
 					t_queue.emplace(zero, t);
-					while (!done.load(std::memory_order_relaxed) && !t_queue.empty() &&
+					while (!s_done.load(std::memory_order_relaxed) && !t_queue.empty() &&
 						!impl::_atomic_bidirectional_search_step<impl::traits::In>(this->_impl(),
 							t_queue, t_closed, s_closed, weight, t_distance, t_tree, compare, combine))
 						;
-					done.store(true);
+					t_done.store(true);
 				}
 			}
 
