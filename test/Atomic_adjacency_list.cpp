@@ -244,7 +244,7 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 TEST_CASE("atomic adjacency list", "[benchmark]") {
 	using G = graph::Atomic_out_adjacency_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 1000;
+	static const std::size_t size = 10000;
 	std::mt19937 r;
 	BENCHMARK("insert vertices") {
 		G g;

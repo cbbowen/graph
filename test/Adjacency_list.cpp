@@ -418,7 +418,7 @@ SCENARIO("in-adjacency lists check preconditions when debugging", "[In_adjacency
 TEST_CASE("adjacency list", "[benchmark]") {
 	using G = graph::Out_adjacency_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 1000;
+	static const std::size_t size = 10000;
 	std::mt19937 r;
 	BENCHMARK("insert vertices") {
 		G g;
@@ -464,7 +464,10 @@ TEST_CASE("adjacency list", "[benchmark]") {
 		auto weight = g.edge_map(0.0);
 		for (auto e : g.edges())
 			weight[e] = std::uniform_real_distribution<double>{}(r);
-		auto [tree, distances] = g.shortest_paths_from(g.random_vert(r), weight);
+		for (auto s : g.verts()) {
+			auto [_, distance] = g.shortest_paths_from(s, weight);
+			REQUIRE(distance(s) == 0);
+		}
 	}
 	BENCHMARK("erase edges") {
 		for (std::size_t i = 0; i < size; ++i)

@@ -292,7 +292,7 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 TEST_CASE("stable adjacency list", "[benchmark]") {
 	using G = graph::Stable_out_adjacency_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 1000;
+	static const std::size_t size = 10000;
 	std::mt19937 r;
 
 	BENCHMARK("insert vertices") {
@@ -339,14 +339,17 @@ TEST_CASE("stable adjacency list", "[benchmark]") {
 		auto weight = g.edge_map(0.0);
 		for (auto e : g.edges())
 			weight[e] = std::uniform_real_distribution<double>{}(r);
-		auto [tree, distances] = g.shortest_paths_from(g.random_vert(r), weight);
+		for (auto s : g.verts()) {
+			auto [_, distance] = g.shortest_paths_from(s, weight);
+			REQUIRE(distance(s) == 0);
+		}
 	}
 }
 
 TEST_CASE("stable bidirectional adjacency list", "[benchmark]") {
 	using G = graph::Stable_bi_adjacency_list;
 	static const std::size_t order = 1000;
-	static const std::size_t size = 1000;
+	static const std::size_t size = 10000;
 	std::mt19937 r;
 
 	BENCHMARK("insert vertices") {
@@ -393,15 +396,21 @@ TEST_CASE("stable bidirectional adjacency list", "[benchmark]") {
 		auto weight = g.edge_map(0.0);
 		for (auto e : g.edges())
 			weight[e] = std::uniform_real_distribution<double>{}(r);
-		auto s = g.random_vert(r), t = g.random_vert(r);
-		auto path = g.shortest_path(s, t, weight);
+		for (auto s : g.verts()) {
+			auto path = g.shortest_path(s, g.random_vert(r), weight);
+			if (!g.is_null(path))
+				REQUIRE(path.total(weight) >= 0);
+		}
 	}
 	BENCHMARK("find shortest path in parallel") {
 		auto weight = g.edge_map(0.0);
 		for (auto e : g.edges())
 			weight[e] = std::uniform_real_distribution<double>{}(r);
-		auto s = g.random_vert(r), t = g.random_vert(r);
-		auto path = g.parallel_shortest_path(s, t, weight);
+		for (auto s : g.verts()) {
+			auto path = g.parallel_shortest_path(s, g.random_vert(r), weight);
+			if (!g.is_null(path))
+				REQUIRE(path.total(weight) >= 0);
+		}
 	}
 }
 #endif
