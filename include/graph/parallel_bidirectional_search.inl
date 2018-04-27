@@ -98,29 +98,42 @@ namespace graph {
 
 			// Perform bidirectional search steps in parallel on two threads
 			alignas(64) std::atomic<bool> t_done{false}, s_done{false};
+			std::exception_ptr s_ex, t_ex;
 			#pragma omp parallel num_threads(2)
 			{
 				#pragma omp single nowait
 				{
-					auto s_queue = queue_type(queue_compare{ compare });
-					s_queue.emplace(zero, s);
-					while (!t_done.load(std::memory_order_relaxed) && !s_queue.empty() &&
-						!impl::_atomic_bidirectional_search_step<impl::traits::Out>(this->_impl(),
-							s_queue, s_closed, t_closed, weight, s_distance, s_tree, compare, combine))
-						;
+					try {
+						auto s_queue = queue_type(queue_compare{ compare });
+						s_queue.emplace(zero, s);
+						while (!t_done.load(std::memory_order_relaxed) && !s_queue.empty() &&
+							!impl::_atomic_bidirectional_search_step<impl::traits::Out>(this->_impl(),
+								s_queue, s_closed, t_closed, weight, s_distance, s_tree, compare, combine))
+							;
+					} catch (...) {
+						s_ex = std::current_exception();
+					}
 					s_done.store(true);
 				}
 				#pragma omp single nowait
 				{
-					auto t_queue = queue_type(queue_compare{ compare });
-					t_queue.emplace(zero, t);
-					while (!s_done.load(std::memory_order_relaxed) && !t_queue.empty() &&
-						!impl::_atomic_bidirectional_search_step<impl::traits::In>(this->_impl(),
-							t_queue, t_closed, s_closed, weight, t_distance, t_tree, compare, combine))
-						;
+					try {
+						auto t_queue = queue_type(queue_compare{ compare });
+						t_queue.emplace(zero, t);
+						while (!s_done.load(std::memory_order_relaxed) && !t_queue.empty() &&
+							!impl::_atomic_bidirectional_search_step<impl::traits::In>(this->_impl(),
+								t_queue, t_closed, s_closed, weight, t_distance, t_tree, compare, combine))
+							;
+					} catch (...) {
+						t_ex = std::current_exception();
+					}
 					t_done.store(true);
 				}
 			}
+			if (s_ex)
+				std::rethrow_exception(s_ex);
+			if (t_ex)
+				std::rethrow_exception(t_ex);
 
 			// Find the minimal rendezvous
 			auto total_distance = [&](auto v) { return combine(s_distance(v), t_distance(v)); };
