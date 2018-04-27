@@ -412,6 +412,55 @@ SCENARIO("in-adjacency lists check preconditions when debugging", "[In_adjacency
 		}
 	}
 }
+SCENARIO("bi-adjacency lists check preconditions when debugging", "[Bi_adjacency_list]") {
+	using G = graph::Bi_adjacency_list;
+	GIVEN("an empty graph") {
+		G g;
+		std::mt19937 r;
+		WHEN("selecting a random vertex") {
+			try {
+				g.random_vert(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("selecting a random edge") {
+			try {
+				g.random_edge(r);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+	GIVEN("a graph with a negative edge weight") {
+		G g;
+		auto s = g.insert_vert(), t = g.insert_vert();
+		g.insert_edge(s, t);
+		auto weight = g.edge_map(-1.0);
+		WHEN("searching for shortest paths from a vertex") {
+			try {
+				g.shortest_paths_from(s, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("searching for shortest paths to a vertex") {
+			try {
+				g.shortest_paths_to(t, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("searching for a shortest path") {
+			try {
+				g.shortest_path(s, t, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+		WHEN("searching for a shortest path in parallel") {
+			try {
+				g.parallel_shortest_path(s, t, weight);
+				REQUIRE(false);
+			} catch (graph::precondition_unmet) {}
+		}
+	}
+}
 #endif
 
 #ifdef GRAPH_BENCHMARK

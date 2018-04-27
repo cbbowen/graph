@@ -240,6 +240,8 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 			const double epsilon = 0.001;
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution(epsilon, 1.0)(r);
+			// Insert an extra vertex that is never reachable
+			gt.insert_vert();
 			for (auto s : g.verts()) {
 				auto [tree, distance] = g.shortest_paths_from(s, weight);
 				for (auto t : g.verts()) {
@@ -265,6 +267,8 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 			const double epsilon = 0.001;
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution(epsilon, 1.0)(r);
+			// Insert an extra vertex that is never reachable
+			gt.insert_vert();
 			for (auto s : g.verts()) {
 				auto [tree, distance] = g.shortest_paths_from(s, weight);
 				for (auto t : g.verts()) {

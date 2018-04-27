@@ -17,7 +17,7 @@ namespace graph {
 		auto Graph<Impl>::_subtree(Vert root) const {
 			using Subtree_impl = impl::Subtree<Adjacency, Impl>;
 			return _wrap_graph(Subtree_impl(this->_impl(), std::move(root)));
-		}
+		} // LCOV_EXCL_LINE (unreachable)
 		namespace impl {
 			template <class Adjacency, class G, class WM, class Compare>
 			auto _prim(const G& g, const Vert<G>& v, const WM& weight, const Compare& compare) {
@@ -58,11 +58,11 @@ namespace graph {
 		template <class WM, class Compare>
 		auto Out_edge_graph<Impl>::minimum_tree_reachable_from(const Vert& s, const WM& weight, const Compare& compare) const {
 			return _wrap_graph(impl::_prim<impl::traits::Out>(this->_impl(), s, weight, compare));
-		}
+		} // LCOV_EXCL_LINE (unreachable)
 		template <class Impl>
 		template <class WM, class Compare>
 		auto In_edge_graph<Impl>::minimum_tree_reaching_to(const Vert& t, const WM& weight, const Compare& compare) const {
 			return _wrap_graph(impl::_prim<impl::traits::In>(this->_impl(), t, weight, compare));
-		}
+		} // LCOV_EXCL_LINE (unreachable)
 	}
 }
