@@ -98,7 +98,7 @@ namespace graph {
 
 			// Perform bidirectional search steps in parallel on two threads
 			alignas(64) std::atomic<bool> t_done{false}, s_done{false};
-			std::exception_ptr s_ex, t_ex;
+			std::exception_ptr s_ex{}, t_ex{};
 			#pragma omp parallel num_threads(2)
 			{
 				#pragma omp single nowait
