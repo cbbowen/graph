@@ -5,6 +5,7 @@
 
 #include <limits>
 #include <functional>
+#include <algorithm>
 #include <queue>
 #include <vector>
 #include <cassert>
@@ -86,54 +87,51 @@ namespace graph {
 			};
 			using queue_type = std::priority_queue<pair_type, std::vector<pair_type>, queue_compare>;
 
+			// Explores from one side
+			auto explore = [&](auto adjacency, Vert v, auto& near, const auto& far, auto& distance, auto& tree, const std::atomic<bool>& stop, std::exception_ptr& ex) {
+				try {
+					auto queue = queue_type(queue_compare{ compare });
+					queue.emplace(distance(v), v);
+					while (!stop.load(std::memory_order_relaxed) && !queue.empty() &&
+						!impl::_atomic_bidirectional_search_step<decltype(adjacency)>(this->_impl(),
+							queue, near, far, weight, distance, tree, compare, combine))
+						;
+				} catch (...) {
+					ex = std::current_exception();
+				}
+			};
+
+			// Construct all the structures for each exploration
 			auto s_closed = this->template ephemeral_vert_map<bool>(false),
 				t_closed = this->template ephemeral_vert_map<bool>(false);
 			auto s_distance = this->ephemeral_vert_map(inf),
 				t_distance = this->ephemeral_vert_map(inf);
-			auto s_tree = this->in_subtree(s);
-			auto t_tree = this->out_subtree(t);
-
 			s_distance[s] = zero;
 			t_distance[t] = zero;
-
-			// Perform bidirectional search steps in parallel on two threads
+			auto s_tree = this->in_subtree(s);
+			auto t_tree = this->out_subtree(t);
 			alignas(64) std::atomic<bool> t_done{false}, s_done{false};
 			std::exception_ptr s_ex{}, t_ex{};
+
+			// Explore from both sides in parallel
 			#pragma omp parallel num_threads(2)
 			{
 				#pragma omp single nowait
 				{
-					try {
-						auto s_queue = queue_type(queue_compare{ compare });
-						s_queue.emplace(zero, s);
-						while (!t_done.load(std::memory_order_relaxed) && !s_queue.empty() &&
-							!impl::_atomic_bidirectional_search_step<impl::traits::Out>(this->_impl(),
-								s_queue, s_closed, t_closed, weight, s_distance, s_tree, compare, combine))
-							;
-					} catch (...) {
-						s_ex = std::current_exception();
-					}
+					explore(impl::traits::Out{}, s, s_closed, t_closed, s_distance, s_tree, t_done, s_ex);
 					s_done.store(true);
 				}
 				#pragma omp single nowait
 				{
-					try {
-						auto t_queue = queue_type(queue_compare{ compare });
-						t_queue.emplace(zero, t);
-						while (!s_done.load(std::memory_order_relaxed) && !t_queue.empty() &&
-							!impl::_atomic_bidirectional_search_step<impl::traits::In>(this->_impl(),
-								t_queue, t_closed, s_closed, weight, t_distance, t_tree, compare, combine))
-							;
-					} catch (...) {
-						t_ex = std::current_exception();
-					}
+					explore(impl::traits::In{}, t, t_closed, s_closed, t_distance, t_tree, s_done, t_ex);
 					t_done.store(true);
 				}
 			}
-			if (s_ex)
-				std::rethrow_exception(s_ex);
-			if (t_ex)
-				std::rethrow_exception(t_ex);
+			// python or
+			auto ex = std::min({std::move(s_ex), std::move(s_ex)},
+				[](auto l, auto r){ return static_cast<bool>(l); });
+			if (ex)
+				std::rethrow_exception(ex);
 
 			// Find the minimal rendezvous
 			auto total_distance = [&](auto v) { return combine(s_distance(v), t_distance(v)); };
