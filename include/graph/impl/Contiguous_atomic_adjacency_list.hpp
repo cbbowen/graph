@@ -41,6 +41,14 @@ namespace graph {
 					check_precondition(vk < vert_capacity(), "insufficient vertex capacity");
 					return Vert{vk};
 				}
+				auto sequential_insert_vert() {
+					auto vk = _vlast++;
+					if (vk >= vert_capacity()) {
+						assert(_vcapacity == vk);
+						++_vcapacity;
+					}
+					return Vert{vk};
+				}
 				template <class T>
 				using Vert_map = persistent_contiguous_key_map<Vert, T>;
 				template <class T>
@@ -104,6 +112,16 @@ namespace graph {
 					_elist[ek] = std::make_pair(s, t);
 					return Edge(ek);
 				}
+				auto sequential_insert_edge(Vert s, Vert t) {
+					auto ek = _elast++;
+					if (ek < edge_capacity()) {
+						_elist[ek] = std::make_pair(s, t);
+					} else {
+						assert(ek == _elist.size());
+						_elist.push_back(s, t);
+					}
+					return Edge(ek);
+				}
 				template <class T>
 				using Edge_map = persistent_contiguous_key_map<Edge, T>;
 				template <class T>
@@ -121,10 +139,8 @@ namespace graph {
 				auto edge_set() const {
 					return Edge_set();
 				}
-				//using Ephemeral_edge_set = Edge_set;
 				using Ephemeral_edge_set = ephemeral_contiguous_key_set<Edge>;
 				auto ephemeral_edge_set() const {
-					//return edge_set();
 					return Ephemeral_edge_set(size());
 				}
 			private:
@@ -135,6 +151,7 @@ namespace graph {
 			template <class Adjacency, template <class> class Atomic_container = atomic_list>
 			struct Contiguous_atomic_adjacency_list_base :
 				Contiguous_atomic_edge_list<> {
+				static_assert(std::is_same_v<Adjacency, traits::Out> || std::is_same_v<Adjacency, traits::In>);
 				using _base_type = Contiguous_atomic_edge_list<>;
 
 				using Order = typename _base_type::Order;
@@ -150,11 +167,18 @@ namespace graph {
 				}
 				auto insert_edge(Vert s, Vert t) {
 					auto e = _base_type::insert_edge(s, t);
-					static_assert(std::is_same_v<Adjacency, traits::Out> || std::is_same_v<Adjacency, traits::In>);
 					if constexpr (std::is_same_v<Adjacency, traits::Out>)
 						_vlist[s.key()].emplace(e);
 					else
 						_vlist[t.key()].emplace(e);
+					return e;
+				}
+				auto sequential_insert_edge(Vert s, Vert t) {
+					auto e = _base_type::insert_edge(s, t);
+					auto kk = std::is_same_v<Adjacency, traits::Out> ? s.key() : t.key();
+					if (kk >= this->vert_capacity())
+						reserve_verts(2 * (vert_capacity() + 1));
+					_vlist[kk].emplace(e);
 					return e;
 				}
 				auto _vert_edges(Vert k) const {
@@ -199,19 +223,3 @@ namespace graph {
 		}
 	}
 }
-
-#if GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS
-namespace std {
-	template <class T>
-	struct hash<::graph::v1::impl::node_pointer_wrapper<T>> {
-		using argument_type = ::graph::v1::impl::node_pointer_wrapper<T>;
-		auto operator()(const argument_type& a) const {
-			// We have a couple of options here.  We could hash the pointer or we could hash the key, since both are unique.  The key produces fewer collisions but requires an extra indirection, so doesn't seem to be worthwhile.
-			return _inner_hash(a._p);
-		}
-	private:
-		using _inner_hash_type = hash<T *>;
-		_inner_hash_type _inner_hash;
-	};
-}
-#endif
