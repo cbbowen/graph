@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace graph {
 	inline namespace v1 {
@@ -18,13 +19,14 @@ namespace graph {
 				using const_reference = const T&;
 				using reference = T&;
 				explicit ephemeral_contiguous_key_map(std::size_t size) :
-					// Note that the trailing parentheses cause each element to be value-initialized
-					_map(new T[size]()) {
+					// Note that the elements will be value-initialized
+					_map(std::make_unique<T[]>(size)) {
 				}
 				ephemeral_contiguous_key_map(std::size_t size, T default_) :
+				// Note that the elements will be default-initialized
 					_map(new T[size]) {
-					for (std::size_t i = 0; i < size; ++i)
-						new(&_map[i]) T(default_);
+					// Annoyingly, this approach uses copy-assignment instead of copy-construction, but copy construction isn't possible with `new []`, which we need to use because `std::default_delete` calls `delete []`.
+					std::fill_n(_map.get(), size, default_);
 				}
 				const_reference operator()(const key_type& k) const {
 					auto i = k.key();
