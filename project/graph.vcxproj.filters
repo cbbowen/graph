@@ -36,6 +36,9 @@
     <ClCompile Include="..\test\Stable_edge_list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\Contiguous_atomic_adjacency_list.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp">
@@ -134,6 +137,18 @@
     <ClInclude Include="..\test\Graph_tester.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\graph\impl\omp.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\impl\Path.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\impl\Contiguous_atomic_adjacency_list.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\Contiguous_atomic_adjacency_list.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\graph\dijkstra.inl">
@@ -155,6 +170,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\bidirectional_search.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\include\graph\parallel_bidirectional_search.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

@@ -154,8 +154,7 @@ namespace graph {
 		template <class Impl>
 		template <class Weight, class Compare, class Combine>
 		auto Bi_edge_graph<Impl>::parallel_shortest_path(const Vert& s, const Vert& t, const Weight& weight,
-			const Compare& compare, const Combine& combine) const
-			-> std::optional<std::vector<Edge>> {
+			const Compare& compare, const Combine& combine) const -> Path {
 			return this->shortest_path(s, t, weight, compare, combine);
 		}
 	}

@@ -68,6 +68,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\test\Contiguous_atomic_adjacency_list.cpp" />
     <ClCompile Include="..\test\Edge_list.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -86,12 +87,14 @@
   <ItemGroup>
     <ClInclude Include="..\include\graph\Adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Atomic_adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\Contiguous_atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Edge_list.hpp" />
     <ClInclude Include="..\include\graph\Graph.hpp" />
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\atomic_list.hpp" />
     <ClInclude Include="..\include\graph\impl\construct_fn.hpp" />
+    <ClInclude Include="..\include\graph\impl\Contiguous_atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\contiguous_key_map.hpp" />
     <ClInclude Include="..\include\graph\impl\Depth_first_search.hpp" />
     <ClInclude Include="..\include\graph\impl\Edge_list.hpp" />
@@ -100,6 +103,8 @@
     <ClInclude Include="..\include\graph\impl\get_fn.hpp" />
     <ClInclude Include="..\include\graph\impl\integral_wrapper.hpp" />
     <ClInclude Include="..\include\graph\impl\map_iterator_wrapper.hpp" />
+    <ClInclude Include="..\include\graph\impl\omp.hpp" />
+    <ClInclude Include="..\include\graph\impl\Path.hpp" />
     <ClInclude Include="..\include\graph\impl\pointer_wrapper.hpp" />
     <ClInclude Include="..\include\graph\impl\Reverse.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_adjacency_list.hpp" />
@@ -121,6 +126,7 @@
     <None Include="..\include\graph\bidirectional_search.inl" />
     <None Include="..\include\graph\dijkstra.inl" />
     <None Include="..\include\graph\format.inl" />
+    <None Include="..\include\graph\parallel_bidirectional_search.inl" />
     <None Include="..\include\graph\random.inl" />
     <None Include="..\include\graph\reverse.inl" />
     <None Include="..\include\graph\scc.inl" />
