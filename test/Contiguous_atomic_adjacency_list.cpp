@@ -16,6 +16,23 @@ SCENARIO("contiguous atomic out-adjacency lists behave properly", "[Contiguous_a
 		REQUIRE(g.size() == 0);
 		Out_edge_graph_tester gt{g};
 
+		WHEN("vertices are inserted sequentially") {
+			std::size_t M = 100;
+			g.sequential_insert_vert();
+			g.reserve_verts(M / 4);
+			for (std::size_t i = 1; i < M; ++i)
+				g.sequential_insert_vert();
+			REQUIRE(g.order() == M);
+		}
+		WHEN("self-edges are inserted sequentially") {
+			std::size_t N = 100;
+			auto v = g.sequential_insert_vert();
+			g.sequential_insert_edge(v, v);
+			g.reserve_edges(N / 4);
+			for (std::size_t i = 1; i < N; ++i)
+				g.sequential_insert_edge(v, v);
+			REQUIRE(g.size() == N);
+		}
 		WHEN("vertices are reserved") {
 			g.reserve_verts(10);
 			REQUIRE(g.vert_capacity() >= 10);

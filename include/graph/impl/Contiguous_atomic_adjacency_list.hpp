@@ -54,7 +54,7 @@ namespace graph {
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(_vcapacity, std::move(default_));
-				}
+				} // LCOV_EXCL_LINE (unreachable)
 				template <class T>
 				using Ephemeral_vert_map = ephemeral_contiguous_key_map<Vert, T>;
 				template <class T>
@@ -118,7 +118,7 @@ namespace graph {
 						_elist[ek] = std::make_pair(s, t);
 					} else {
 						assert(ek == _elist.size());
-						_elist.push_back(s, t);
+						_elist.emplace_back(s, t);
 					}
 					return Edge(ek);
 				}
@@ -165,21 +165,26 @@ namespace graph {
 					_base_type::reserve_verts(capacity);
 					_vlist.resize(this->vert_capacity());
 				}
-				auto insert_edge(Vert s, Vert t) {
-					auto e = _base_type::insert_edge(s, t);
-					if constexpr (std::is_same_v<Adjacency, traits::Out>)
-						_vlist[s.key()].emplace(e);
-					else
-						_vlist[t.key()].emplace(e);
-					return e;
+				auto sequential_insert_vert() {
+					auto v = _base_type::sequential_insert_vert();
+					if (v.key() >= _vlist.size()) {
+						assert(_vlist.size() == v.key());
+						_vlist.emplace_back();
+					}
+					return v;
 				}
-				auto sequential_insert_edge(Vert s, Vert t) {
-					auto e = _base_type::insert_edge(s, t);
+				auto _insert_adjacency(Vert s, Vert t, Edge e) {
 					auto kk = std::is_same_v<Adjacency, traits::Out> ? s.key() : t.key();
-					if (kk >= this->vert_capacity())
-						reserve_verts(2 * (vert_capacity() + 1));
 					_vlist[kk].emplace(e);
 					return e;
+				}
+				auto insert_edge(Vert s, Vert t) {
+					return _insert_adjacency(s, t,
+						_base_type::insert_edge(s, t));
+				}
+				auto sequential_insert_edge(Vert s, Vert t) {
+					return _insert_adjacency(s, t,
+						_base_type::sequential_insert_edge(s, t));
 				}
 				auto _vert_edges(Vert k) const {
 					return ranges::view::all(_vlist[k.key()]);
