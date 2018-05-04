@@ -1,186 +1,216 @@
 #pragma once
 
+#include <atomic>
+
 #include <range/v3/view/all.hpp>
-#include <range/v3/view/join.hpp>
+#include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
 
-// This is significantly slower for graph construction, but allows the use of contiguous maps which allow parallel access of values with different keys (after calling `reserve`).  Given this tradeoff, it probably makes sense to add a Contiguous_atomic_adjacency_list.  Such a structure could supply its own `reserve_verts` and `reserve_edges` methods and use (contiguous) maps instead of pointers.  This arrangement would be more difficult to use correctly, but could yield significant performance gains in contentious code.
-#define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS 0
-#if GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_WRAPPER node_pointer_wrapper
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_NODE_MEMBERS std::size_t _index
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_VNODE_CTOR_ARGS _vnext.fetch_add(1, std::memory_order_relaxed)
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_ENODE_CTOR_ARGS _enext.fetch_add(1, std::memory_order_relaxed),
-	// TODO: Use ephemeral_contiguous_key_map where applicable
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_MAP_TYPE persistent_contiguous_key_map
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_SET_TYPE unordered_set
-#	include "contiguous_key_map.hpp"
-#	include "unordered_set.hpp"
-#else
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_WRAPPER pointer_wrapper
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_NODE_MEMBERS
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_VNODE_CTOR_ARGS
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_ENODE_CTOR_ARGS
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_MAP_TYPE unordered_key_map
-#	define GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_SET_TYPE unordered_set
-#	include "unordered_key_map.hpp"
-#	include "unordered_set.hpp"
-#endif
-
+#include "construct_fn.hpp"
+#include "tracker.hpp"
+#include "exceptions.hpp"
+#include "integral_wrapper.hpp"
+#include "contiguous_key_map.hpp"
+#include "unordered_set.hpp"
 #include "atomic_list.hpp"
-#include "pointer_wrapper.hpp"
 
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
-#if GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS
-			template <class T>
-			struct node_pointer_wrapper {
-				using key_type = std::size_t;
-				using flag_type = T *;
-				using this_type = node_pointer_wrapper;
-				node_pointer_wrapper(T *p) noexcept : _p(std::move(p)) {}
-				node_pointer_wrapper(key_type, flag_type p) noexcept : this_type(std::move(p)) {}
-				node_pointer_wrapper(T& r) noexcept : this_type(&r) {}
-				node_pointer_wrapper() noexcept : this_type(nullptr) {}
-				key_type key() const { return _p->_index; }
-				key_type flag() const { return _p; }
-				auto operator ==(const this_type& other) const { return _p == other._p; }
-				auto operator !=(const this_type& other) const { return _p != other._p; }
-				auto operator <(const this_type& other) const { return _p < other._p; }
-				auto operator <=(const this_type& other) const { return _p <= other._p; }
-				auto operator >(const this_type& other) const { return _p > other._p; }
-				auto operator >=(const this_type& other) const { return _p >= other._p; }
-				T& operator*() const { return *_p; }
-				T *operator->() const { return _p; }
-				template <class Char, class Traits>
-				friend decltype(auto) operator<<(std::basic_ostream<Char, Traits>& s, const this_type& x) {
-					return s << x.key();
-				}
-			private:
-				friend struct ::std::hash<this_type>;
-				T *_p;
-			};
-#endif
-			template <template <class> class Atomic_container = atomic_list>
-			struct Atomic_adjacency_list_base {
-				struct _enode;
-				using Edge = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_WRAPPER<_enode>;
-				using _alist_type = Atomic_container<Edge>;
-				struct _vnode {
-					GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_NODE_MEMBERS;
-					_alist_type _alist;
-				};
-				using Vert = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_WRAPPER<_vnode>;
-				struct _enode {
-					GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_NODE_MEMBERS;
-					Vert _key, _cokey;
-				};
-
-				using _vlist_type = Atomic_container<_vnode>;
-				using _elist_type = Atomic_container<_enode>;
-
-				using Order = typename _vlist_type::size_type;
-				using Size = typename _elist_type::size_type;
-				using _degree_type = typename _alist_type::size_type;
-
+			// Guarantees: All const methods and `atomic_*` are atomic unless otherwise noted.
+			template <class Order_ = std::size_t>
+			struct Atomic_vert_list {
+				using Order = Order_;
+				using Vert = integral_wrapper<Order, struct vert_tag>;
 				auto verts() const {
-					return ranges::view::all(_vlist) |
-						ranges::view::transform([](auto& v){ return Vert{&v}; });
-				}
-				auto order() const noexcept {
-					return _vlist.conservative_size();
+					return ranges::view::iota(Order{}, order()) |
+						ranges::view::transform(construct<Vert>);
 				}
 				auto null_vert() const noexcept {
 					return Vert{};
 				}
-				static auto _vert_edges(const Vert& v) {
-					return ranges::view::all(v->_alist);
+				auto order() const noexcept {
+					return _vlast.load();
 				}
-				_degree_type _vert_degree(const Vert& v) const {
-					return v->_alist.conservative_size();
+				void reserve_verts(Order capacity) {
+					if (capacity > vert_capacity()) {
+						_vcapacity = capacity;
+						for (auto& m : _vmap_tracker.trackees())
+							m._reserve(capacity);
+					}
 				}
+				Order vert_capacity() const noexcept {
+					return _vcapacity;
+				}
+				auto atomic_insert_vert() {
+					auto vk = _vlast++;
+					check_precondition(vk < vert_capacity(), "insufficient vertex capacity");
+					return Vert{vk};
+				}
+				auto insert_vert() {
+					auto vk = _vlast++;
+					if (vk >= vert_capacity()) {
+						assert(_vcapacity == vk);
+						++_vcapacity;
+					}
+					return Vert{vk};
+				}
+				template <class T>
+				using Vert_map = tracked<persistent_contiguous_key_map<Vert, T>, reservable_base<Vert>>;
+				template <class T>
+				auto vert_map(T default_) const {
+					return Vert_map<T>(_vmap_tracker, _vcapacity, std::move(default_));
+				} // LCOV_EXCL_LINE (unreachable)
+				template <class T>
+				using Ephemeral_vert_map = ephemeral_contiguous_key_map<Vert, T>;
+				template <class T>
+				auto ephemeral_vert_map(T default_) const {
+					return Ephemeral_vert_map<T>(order(), std::move(default_));
+				}
+
+				using Vert_set = unordered_set<Vert>;
+				auto vert_set() const {
+					return Vert_set();
+				}
+				//using Ephemeral_vert_set = Vert_set;
+				using Ephemeral_vert_set = ephemeral_contiguous_key_set<Vert>;
+				auto ephemeral_vert_set() const {
+					//return vert_set();
+					return Ephemeral_vert_set(order());
+				}
+			private:
+				std::atomic<Order> _vlast = 0;
+				Order _vcapacity = 0;
+				tracker<reservable_base<Vert>> _vmap_tracker;
+			};
+
+			template <class Order_ = std::size_t, class Size_ = std::size_t>
+			struct Atomic_edge_list :
+				Atomic_vert_list<Order_> {
+				using _base_type = Atomic_vert_list<Order_>;
+				using Vert = typename _base_type::Vert;
+				using Size = Size_;
+				using Edge = integral_wrapper<Size, struct edge_tag>;
 				auto edges() const {
-					return verts() |
-						ranges::view::transform(&_vert_edges) |
-						ranges::view::join;
-				}
-				auto size() const noexcept {
-					return _elist.conservative_size();
+					return ranges::view::iota(Size{}, size()) |
+						ranges::view::transform(construct<Edge>);
 				}
 				auto null_edge() const noexcept {
 					return Edge{};
 				}
-				static auto _edge_key(const Edge& e) {
-					return e->_key;
+				auto size() const noexcept {
+					return _elast.load();
 				}
-				static auto _edge_cokey(const Edge& e) {
-					return e->_cokey;
+				auto tail(const Edge& e) const {
+					return _elist[e.key()].first;
 				}
-				auto insert_vert() {
-					return Vert{_vlist.emplace(GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_VNODE_CTOR_ARGS)};
+				auto head(const Edge& e) const {
+					return _elist[e.key()].second;
 				}
-				auto _insert_edge(Vert k, Vert v) {
-					auto e = Edge{_elist.emplace(GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_ENODE_CTOR_ARGS k, v)};
-					k->_alist.emplace(e);
-					return e;
+				void reserve_edges(Size capacity) {
+					if (capacity > edge_capacity()) {
+						_elist.resize(capacity);
+						for (auto& m : _emap_tracker.trackees())
+							m._reserve(capacity);
+					}
 				}
-
+				Size edge_capacity() const noexcept {
+					return _elist.size();
+				}
+				auto atomic_insert_edge(Vert s, Vert t) {
+					auto ek = _elast++;
+					check_precondition(ek < edge_capacity(), "insufficient edge capacity");
+					_elist[ek] = std::make_pair(s, t);
+					return Edge(ek);
+				}
+				auto insert_edge(Vert s, Vert t) {
+					auto ek = _elast++;
+					if (ek < edge_capacity()) {
+						_elist[ek] = std::make_pair(s, t);
+					} else {
+						assert(ek == _elist.size());
+						_elist.emplace_back(s, t);
+					}
+					return Edge(ek);
+				}
 				template <class T>
-				using Vert_map = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_MAP_TYPE<Vert, T>;
-				template <class T>
-				auto vert_map(T default_) const {
-					return Vert_map<T>(std::move(default_));
-				}  // LCOV_EXCL_LINE (unreachable)
-				template <class T>
-				using Ephemeral_vert_map = Vert_map<T>;
-				template <class T>
-				auto ephemeral_vert_map(T default_) const {
-					return vert_map(std::move(default_));
-				}
-
-				using Vert_set = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_SET_TYPE<Vert>;
-				auto vert_set() const {
-					return Vert_set();
-				}
-				using Ephemeral_vert_set = Vert_set;
-				auto ephemeral_vert_set() const {
-					return vert_set();
-				}
-
-				template <class T>
-				using Edge_map = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_MAP_TYPE<Edge, T>;
+				using Edge_map = tracked<persistent_contiguous_key_map<Edge, T>, reservable_base<Edge>>;
 				template <class T>
 				auto edge_map(T default_) const {
-					return Edge_map<T>(std::move(default_));
-				}  // LCOV_EXCL_LINE (unreachable)
+					return Edge_map<T>(_emap_tracker, _elist.size(), std::move(default_));
+				} // LCOV_EXCL_LINE (unreachable)
 				template <class T>
-				using Ephemeral_edge_map = Edge_map<T>;
+				using Ephemeral_edge_map = ephemeral_contiguous_key_map<Edge, T>;
 				template <class T>
 				auto ephemeral_edge_map(T default_) const {
-					return edge_map(std::move(default_));
+					return Ephemeral_edge_map<T>(size(), std::move(default_));
 				}
 
-				using Edge_set = GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_DECLARE_SET_TYPE<Edge>;
+				using Edge_set = unordered_set<Edge>;
 				auto edge_set() const {
 					return Edge_set();
 				}
-				using Ephemeral_edge_set = Edge_set;
+				using Ephemeral_edge_set = ephemeral_contiguous_key_set<Edge>;
 				auto ephemeral_edge_set() const {
-					return edge_set();
+					return Ephemeral_edge_set(size());
 				}
 			private:
-				// Vertices are non-const pointers so that insert_edge can be nice, which means this needs to be mutable.
-				mutable _vlist_type _vlist;
-				_elist_type _elist;
-#if GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS
-				std::atomic<std::size_t> _vnext{0}, _enext{0};
-#endif
+				std::vector<std::pair<Vert, Vert>> _elist;
+				std::atomic<Size> _elast = 0;
+				tracker<reservable_base<Edge>> _emap_tracker;
+			};
+
+			template <class Adjacency, template <class> class Atomic_container = atomic_list>
+			struct Atomic_adjacency_list_base :
+				Atomic_edge_list<> {
+				static_assert(std::is_same_v<Adjacency, traits::Out> || std::is_same_v<Adjacency, traits::In>);
+				using _base_type = Atomic_edge_list<>;
+
+				using Order = typename _base_type::Order;
+				using Vert = typename _base_type::Vert;
+
+				using _alist_type = Atomic_container<Edge>;
+				using _vlist_type = std::vector<_alist_type>;
+				using _degree_type = typename _alist_type::size_type;
+
+				void reserve_verts(Order capacity) {
+					_base_type::reserve_verts(capacity);
+					_vlist.resize(this->vert_capacity());
+				}
+				auto insert_vert() {
+					auto v = _base_type::insert_vert();
+					if (v.key() >= _vlist.size()) {
+						assert(_vlist.size() == v.key());
+						_vlist.emplace_back();
+					}
+					return v;
+				}
+				auto _insert_adjacency(Vert s, Vert t, Edge e) {
+					auto kk = std::is_same_v<Adjacency, traits::Out> ? s.key() : t.key();
+					_vlist[kk].emplace(e);
+					return e;
+				}
+				auto atomic_insert_edge(Vert s, Vert t) {
+					return _insert_adjacency(s, t,
+						_base_type::atomic_insert_edge(s, t));
+				}
+				auto insert_edge(Vert s, Vert t) {
+					return _insert_adjacency(s, t,
+						_base_type::insert_edge(s, t));
+				}
+				auto _vert_edges(Vert k) const {
+					return ranges::view::all(_vlist[k.key()]);
+				}
+				auto _vert_degree(Vert k) const {
+					return _vlist[k.key()].conservative_size();
+				}
+			private:
+				_vlist_type _vlist;
 			};
 
 			struct Atomic_out_adjacency_list :
-				Atomic_adjacency_list_base<> {
-				using _base_type = Atomic_adjacency_list_base<>;
+				Atomic_adjacency_list_base<traits::Out> {
+				using _base_type = Atomic_adjacency_list_base<traits::Out>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
@@ -191,20 +221,11 @@ namespace graph {
 				inline Out_degree out_degree(const Vert& v) const {
 					return _base_type::_vert_degree(v);
 				}
-				inline auto tail(const Edge& e) const {
-					return _base_type::_edge_key(e);
-				}
-				inline auto head(const Edge& e) const {
-					return _base_type::_edge_cokey(e);
-				}
-				inline auto insert_edge(Vert s, Vert t) {
-					return _base_type::_insert_edge(std::move(s), std::move(t));
-				}
 			};
 
 			struct Atomic_in_adjacency_list :
-				Atomic_adjacency_list_base<> {
-				using _base_type = Atomic_adjacency_list_base<>;
+				Atomic_adjacency_list_base<traits::In> {
+				using _base_type = Atomic_adjacency_list_base<traits::In>;
 				using _base_type::_base_type;
 				using Vert = typename _base_type::Vert;
 				using Edge = typename _base_type::Edge;
@@ -215,32 +236,7 @@ namespace graph {
 				inline In_degree in_degree(const Vert& v) const {
 					return _base_type::_vert_degree(v);
 				}
-				inline auto tail(const Edge& e) const {
-					return _base_type::_edge_cokey(e);
-				}
-				inline auto head(const Edge& e) const {
-					return _base_type::_edge_key(e);
-				}
-				inline auto insert_edge(Vert s, Vert t) {
-					return _base_type::_insert_edge(std::move(t), std::move(s));
-				}
 			};
 		}
 	}
 }
-
-#if GRAPH_V1_IMPL_ATOMIC_ADJACENCY_LIST_USE_CONTIGUOUS_MAPS
-namespace std {
-	template <class T>
-	struct hash<::graph::v1::impl::node_pointer_wrapper<T>> {
-		using argument_type = ::graph::v1::impl::node_pointer_wrapper<T>;
-		auto operator()(const argument_type& a) const {
-			// We have a couple of options here.  We could hash the pointer or we could hash the key, since both are unique.  The key produces fewer collisions but requires an extra indirection, so doesn't seem to be worthwhile.
-			return _inner_hash(a._p);
-		}
-	private:
-		using _inner_hash_type = hash<T *>;
-		_inner_hash_type _inner_hash;
-	};
-}
-#endif

@@ -140,9 +140,10 @@ struct Graph_tester {
 	auto random_edge(Random& r) {
 		return g.random_edge(r);
 	}
-	auto insert_vert() {
+	template <class Vert_inserter>
+	auto test_insert_vert(Vert_inserter vert_inserter) {
 		auto m = g.order();
-		V v = g.insert_vert();
+		V v = std::invoke(std::move(vert_inserter), g);
 		// new vert is unique
 		REQUIRE(vm(v) == g.null_vert());
 		vm[v] = v;
@@ -155,9 +156,13 @@ struct Graph_tester {
 		require_invariants();
 		return v;
 	}
-	auto insert_edge(V s, V t) {
+	auto insert_vert() {
+		return test_insert_vert(&G::insert_vert);
+	}
+	template <class Edge_inserter>
+	auto test_insert_edge(Edge_inserter edge_inserter, V s, V t) {
 		auto n = g.size();
-		E e = g.insert_edge(s, t);
+		E e = std::invoke(std::move(edge_inserter), g, std::move(s), std::move(t));
 		// new edge is unique
 		REQUIRE(em(e) == g.null_edge());
 		em[e] = e;
@@ -171,6 +176,9 @@ struct Graph_tester {
 		REQUIRE(g.head(e) == t);
 		require_invariants();
 		return e;
+	}
+	auto insert_edge(V s, V t) {
+		return test_insert_edge(&G::insert_edge, std::move(s), std::move(t));
 	}
 	void erase_vert(const V& v) {
 		auto m = g.order();

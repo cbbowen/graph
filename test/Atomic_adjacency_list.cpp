@@ -3,6 +3,9 @@
 
 #include "Graph_tester.hpp"
 
+#include <exception>
+#include <algorithm>
+
 #include <range/v3/distance.hpp>
 
 SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_list]") {
@@ -13,17 +16,45 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 		REQUIRE(g.size() == 0);
 		Out_edge_graph_tester gt{g};
 
-		WHEN("a vertex is inserted") {
+		WHEN("vertices are inserted") {
+			std::size_t M = 100;
 			gt.insert_vert();
+			g.reserve_verts(M / 4);
+			for (std::size_t i = 1; i < M; ++i)
+				gt.insert_vert();
+			REQUIRE(g.order() == M);
 		}
-		WHEN("a self-edge is inserted") {
+		WHEN("self-edges are inserted") {
+			std::size_t N = 100;
 			auto v = gt.insert_vert();
 			gt.insert_edge(v, v);
+			g.reserve_edges(N / 4);
+			for (std::size_t i = 1; i < N; ++i)
+				gt.insert_edge(v, v);
+			REQUIRE(g.size() == N);
 		}
-		WHEN("an edge is inserted") {
+		WHEN("vertices are reserved") {
+			g.reserve_verts(10);
+			REQUIRE(g.vert_capacity() >= 10);
+		}
+		WHEN("edges are reserved") {
+			g.reserve_edges(10);
+			REQUIRE(g.edge_capacity() >= 10);
+		}
+		WHEN("a vertex is inserted atomically") {
+			g.reserve_verts(1);
+			gt.test_insert_vert(&G::atomic_insert_vert);
+		}
+		WHEN("a self-edge is inserted atomically") {
+			g.reserve_edges(1);
+			auto v = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, v, v);
+		}
+		WHEN("an edge is inserted atomically") {
+			g.reserve_edges(1);
 			auto s = gt.insert_vert(),
 				t = gt.insert_vert();
-			g.insert_edge(s, t);
+			gt.test_insert_edge(&G::atomic_insert_edge, s, t);
 		}
 		#ifdef _OPENMP
 		std::vector<std::mt19937> thread_random;
@@ -31,21 +62,23 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 			thread_random.emplace_back(i);
 		const std::size_t M = 1000, N = 10000;
 		WHEN("vertices are inserted in parallel") {
+			g.reserve_verts(M);
 			#pragma omp parallel for
 			for (int i = 0; i < M; ++i)
-				g.insert_vert();
+				g.atomic_insert_vert();
 			REQUIRE(g.order() == M);
 			REQUIRE(g.size() == 0);
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
 		WHEN("self-edges are inserted in parallel") {
+			g.reserve_edges(N);
 			g.insert_vert();
 			#pragma omp parallel for
 			for (int i = 0; i < N; ++i) {
 				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 					v = g.random_vert(thread_random[omp_get_thread_num()]);
-				g.insert_edge(u, v);
+				g.atomic_insert_edge(u, v);
 			}
 			REQUIRE(g.order() == 1);
 			REQUIRE(g.size() == N);
@@ -53,13 +86,15 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
 		WHEN("edges and vertices are inserted in parallel") {
+			g.reserve_verts(M);
+			g.reserve_edges(N);
 			#pragma omp parallel for
 			for (int i = 0; i < M; ++i) {
-				g.insert_vert();
+				g.atomic_insert_vert();
 				for (int j = 0; j < (N + i) / M; ++j) {
 					auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 						v = g.random_vert(thread_random[omp_get_thread_num()]);
-					g.insert_edge(u, v);
+					g.atomic_insert_edge(u, v);
 				}
 			}
 			REQUIRE(g.order() == M);
@@ -73,6 +108,8 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 		std::mt19937 r;
 		G g;
 		const std::size_t M = 20, N = 100;
+		g.reserve_verts(M + 2);
+		g.reserve_edges(N + 1);
 		for (std::size_t m = 0; m < M; ++m)
 			g.insert_vert();
 		for (std::size_t n = 0; n < N; ++n) {
@@ -86,14 +123,26 @@ SCENARIO("atomic out-adjacency lists behave properly", "[Atomic_out_adjacency_li
 		WHEN("a vertex is inserted") {
 			gt.insert_vert();
 		}
+		WHEN("a vertex is inserted atomically") {
+			gt.test_insert_vert(&G::atomic_insert_vert);
+		}
 		WHEN("a self-edge is inserted") {
 			auto v = gt.insert_vert();
 			gt.insert_edge(v, v);
+		}
+		WHEN("a self-edge is inserted atomically") {
+			auto v = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, v, v);
 		}
 		WHEN("an edge is inserted") {
 			auto s = gt.insert_vert(),
 				t = gt.insert_vert();
 			gt.insert_edge(s, t);
+		}
+		WHEN("an edge is inserted atomically") {
+			auto s = gt.insert_vert(),
+				t = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, s, t);
 		}
 		WHEN("viewed in reverse") {
 			assert(g.size()); // sanity check on the test itself
@@ -130,17 +179,45 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 		REQUIRE(g.size() == 0);
 		In_edge_graph_tester gt{g};
 
-		WHEN("a vertex is inserted") {
+		WHEN("vertices are inserted") {
+			std::size_t M = 100;
 			gt.insert_vert();
+			g.reserve_verts(M / 4);
+			for (std::size_t i = 1; i < M; ++i)
+				gt.insert_vert();
+			REQUIRE(g.order() == M);
 		}
-		WHEN("a self-edge is inserted") {
+		WHEN("self-edges are inserted") {
+			std::size_t N = 100;
 			auto v = gt.insert_vert();
 			gt.insert_edge(v, v);
+			g.reserve_edges(N / 4);
+			for (std::size_t i = 1; i < N; ++i)
+				gt.insert_edge(v, v);
+			REQUIRE(g.size() == N);
 		}
-		WHEN("an edge is inserted") {
+		WHEN("vertices are reserved") {
+			g.reserve_verts(10);
+			REQUIRE(g.vert_capacity() >= 10);
+		}
+		WHEN("edges are reserved") {
+			g.reserve_edges(10);
+			REQUIRE(g.edge_capacity() >= 10);
+		}
+		WHEN("a vertex is inserted atomically") {
+			g.reserve_verts(1);
+			gt.test_insert_vert(&G::atomic_insert_vert);
+		}
+		WHEN("a self-edge is inserted atomically") {
+			g.reserve_edges(1);
+			auto v = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, v, v);
+		}
+		WHEN("an edge is inserted atomically") {
+			g.reserve_edges(1);
 			auto s = gt.insert_vert(),
 				t = gt.insert_vert();
-			g.insert_edge(s, t);
+			gt.test_insert_edge(&G::atomic_insert_edge, s, t);
 		}
 		#ifdef _OPENMP
 		std::vector<std::mt19937> thread_random;
@@ -148,36 +225,39 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 			thread_random.emplace_back(i);
 		const std::size_t M = 1000, N = 10000;
 		WHEN("vertices are inserted in parallel") {
+			g.reserve_verts(M);
 			#pragma omp parallel for
 			for (int i = 0; i < M; ++i)
-				g.insert_vert();
+				g.atomic_insert_vert();
 			REQUIRE(g.order() == M);
 			REQUIRE(g.size() == 0);
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
-		WHEN("edges are inserted in parallel") {
-			for (int i = 0; i < M; ++i)
-				g.insert_vert();
+		WHEN("self-edges are inserted in parallel") {
+			g.reserve_edges(N);
+			g.insert_vert();
 			#pragma omp parallel for
 			for (int i = 0; i < N; ++i) {
 				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 					v = g.random_vert(thread_random[omp_get_thread_num()]);
-				g.insert_edge(u, v);
+				g.atomic_insert_edge(u, v);
 			}
-			REQUIRE(g.order() == M);
+			REQUIRE(g.order() == 1);
 			REQUIRE(g.size() == N);
 			REQUIRE(ranges::distance(g.verts()) == g.order());
 			REQUIRE(ranges::distance(g.edges()) == g.size());
 		}
-		WHEN("vertices and edges are inserted in parallel") {
+		WHEN("edges and vertices are inserted in parallel") {
+			g.reserve_verts(M);
+			g.reserve_edges(N);
 			#pragma omp parallel for
 			for (int i = 0; i < M; ++i) {
-				g.insert_vert();
+				g.atomic_insert_vert();
 				for (int j = 0; j < (N + i) / M; ++j) {
 					auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 						v = g.random_vert(thread_random[omp_get_thread_num()]);
-					g.insert_edge(u, v);
+					g.atomic_insert_edge(u, v);
 				}
 			}
 			REQUIRE(g.order() == M);
@@ -191,6 +271,8 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 		std::mt19937 r;
 		G g;
 		const std::size_t M = 20, N = 100;
+		g.reserve_verts(M + 2);
+		g.reserve_edges(N + 1);
 		for (std::size_t m = 0; m < M; ++m)
 			g.insert_vert();
 		for (std::size_t n = 0; n < N; ++n) {
@@ -204,14 +286,26 @@ SCENARIO("atomic in-adjacency lists behave properly", "[Atomic_in_adjacency_list
 		WHEN("a vertex is inserted") {
 			gt.insert_vert();
 		}
+		WHEN("a vertex is inserted atomically") {
+			gt.test_insert_vert(&G::atomic_insert_vert);
+		}
 		WHEN("a self-edge is inserted") {
 			auto v = gt.insert_vert();
 			gt.insert_edge(v, v);
+		}
+		WHEN("a self-edge is inserted atomically") {
+			auto v = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, v, v);
 		}
 		WHEN("an edge is inserted") {
 			auto s = gt.insert_vert(),
 				t = gt.insert_vert();
 			gt.insert_edge(s, t);
+		}
+		WHEN("an edge is inserted atomically") {
+			auto s = gt.insert_vert(),
+				t = gt.insert_vert();
+			gt.test_insert_edge(&G::atomic_insert_edge, s, t);
 		}
 		WHEN("viewed in reverse") {
 			assert(g.size()); // sanity check on the test itself
@@ -248,12 +342,15 @@ TEST_CASE("atomic adjacency list", "[benchmark]") {
 	std::mt19937 r;
 	BENCHMARK("insert vertices") {
 		G g;
+		g.reserve_verts(order);
 		for (std::size_t i = 0; i < order; ++i)
 			g.insert_vert();
 		REQUIRE(g.order() == order);
 	}
 	BENCHMARK("insert self-edges") {
 		G g;
+		g.reserve_verts(1);
+		g.reserve_edges(size);
 		auto v = g.insert_vert();
 		for (std::size_t i = 0; i < size; ++i)
 			g.insert_edge(v, v);
@@ -261,6 +358,8 @@ TEST_CASE("atomic adjacency list", "[benchmark]") {
 	}
 	BENCHMARK("insert random edges") {
 		G g;
+		g.reserve_verts(order);
+		g.reserve_edges(size);
 		for (std::size_t i = 0; i < order; ++i)
 			g.insert_vert();
 		for (std::size_t i = 0; i < size; ++i) {
@@ -272,6 +371,8 @@ TEST_CASE("atomic adjacency list", "[benchmark]") {
 	}
 
 	G g;
+	g.reserve_verts(order);
+	g.reserve_edges(size);
 	for (std::size_t i = 0; i < order; ++i)
 		g.insert_vert();
 	for (std::size_t i = 0; i < size; ++i) {
@@ -302,31 +403,36 @@ TEST_CASE("atomic adjacency list", "[benchmark]") {
 		thread_random.emplace_back(i);
 	BENCHMARK("insert vertices in parallel") {
 		G g;
+		g.reserve_verts(order);
 		#pragma omp parallel for
 		for (int i = 0; i < order; ++i)
-			g.insert_vert();
+			g.atomic_insert_vert();
 		REQUIRE(g.order() == order);
 	}
 	BENCHMARK("insert self-edges in parallel") {
 		G g;
-		g.insert_vert();
+		g.reserve_verts(1);
+		g.reserve_edges(size);
+		g.atomic_insert_vert();
 		#pragma omp parallel for
 		for (int i = 0; i < size; ++i) {
 			auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 				v = g.random_vert(thread_random[omp_get_thread_num()]);
-			g.insert_edge(u, v);
+			g.atomic_insert_edge(u, v);
 		}
 		REQUIRE(g.size() == size);
 	}
 	BENCHMARK("insert vertices and edges in parallel") {
 		G g;
+		g.reserve_verts(order);
+		g.reserve_edges(size);
 		#pragma omp parallel for
 		for (int i = 0; i < order; ++i) {
-			g.insert_vert();
+			g.atomic_insert_vert();
 			for (int j = 0; j < (size + i) / order; ++j) {
 				auto u = g.random_vert(thread_random[omp_get_thread_num()]),
 					v = g.random_vert(thread_random[omp_get_thread_num()]);
-				g.insert_edge(u, v);
+				g.atomic_insert_edge(u, v);
 			}
 		}
 		REQUIRE(g.order() == order);

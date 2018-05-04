@@ -6,6 +6,8 @@
 #include <memory>
 #include <algorithm>
 
+#include "reservable_base.hpp"
+
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
@@ -48,7 +50,7 @@ namespace graph {
 				_container_type _map;
 			};
 			template <class K, class T>
-			struct persistent_contiguous_key_map {
+			struct persistent_contiguous_key_map : reservable_base<K> {
 				using _container_type = std::vector<T>;
 				using key_type = K;
 				using inner_key_type = typename key_type::key_type;
@@ -85,6 +87,9 @@ namespace graph {
 				template <class U>
 				T exchange(const key_type& k, U&& u) {
 					return std::exchange((*this)[k], std::forward<U>(u));
+				}
+				void _reserve(std::size_t capacity) override {
+					reserve(capacity);
 				}
 			private:
 				T _default;
