@@ -38,16 +38,21 @@ By using a trait-driven implementation, everything is kept header-only and gener
 
 This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.
 
-| Data Structure              | Removals | Query Outgoing | Query Incoming |
-| ---------------------------:|:--------:|:--------------:|:--------------:|
-| `Out_adjacency_list`        | ✓        | ✓              | -              |
-| `In_adjacency_list`         | ✓        | -              | ✓              |
-| `Stable_out_adjacency_list` | -        | ✓              | -              |
-| `Stable_in_adjacency_list`  | -        | -              | ✓              |
-| `Edge_list`                 | ✓        | -              | -              |
-| `Stable_edge_list`          | -        | -              | -              |
+| Data Structure              | Insertion | Removal | Query Outgoing | Query Incoming |
+| ---------------------------:|:---------:|:-------:|:--------------:|:--------------:|
+| `Edge_list`                 | ✓         | ✓       |                |                |
+| `Out_adjacency_list`        | ✓         | ✓       | ✓              |                |
+| `In_adjacency_list`         | ✓         | ✓       |                | ✓              |
+| `Bi_adjacency_list`         | ✓         | ✓       | ✓              | ✓              |
+| `Stable_edge_list`          | ✓         |         |                |                |
+| `Stable_out_adjacency_list` | ✓         |         | ✓              |                |
+| `Stable_in_adjacency_list`  | ✓         |         |                | ✓              |
+| `Stable_bi_adjacency_list`  | ✓         |         | ✓              | ✓              |
+| `Atomic_edge_list`          | _atomic_  |         |                |                |
+| `Atomic_out_adjacency_list` | _atomic_  |         | _atomic_       |                |
+| `Atomic_out_adjacency_list` | _atomic_  |         |                | _atomic_       |
 
-Note that the data structures that do not support removal are prefixed with `Stable_` to indicate that their vertices and edges are never invalidated.
+Note that the data structures that do not support removal are generally prefixed with `Stable_` to indicate that their vertices and edges are never invalidated.  To enable application to parallel domains, lock-free `Atomic_` graphs are also available.
 
 To declare a function accepting a generic `Graph` all you need to write is:
 
