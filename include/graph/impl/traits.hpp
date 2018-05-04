@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <type_traits>
 
 namespace graph {
 	inline namespace v1 {
@@ -13,8 +14,19 @@ namespace graph {
 			//   value_type => map_type (via unordered_map)
 			//   map_type => map(..) (via constructor)
 
+			struct _unimplemented {};
+
+			template <class Instance, class = void> struct _has_trait_helper :
+				std::true_type {};
+			template <class Instance> struct _has_trait_helper<Instance,
+				std::enable_if_t<std::is_base_of_v<_unimplemented, Instance>>> :
+				std::false_type {};
+			template <template <class...> class Trait, class... Args>
+			constexpr bool has_trait = _has_trait_helper<Trait<Args...>>{}();
+
 			// Canonical place to read graph vertex traits.
-			template <class G, class = void> struct Verts {};
+			template <class G, class = void> struct Verts : _unimplemented {};
+			template <class G> struct Verts<const G> : Verts<G> {};
 			template <class G>
 			struct Verts<G,
 				std::void_t<
@@ -55,12 +67,10 @@ namespace graph {
 				}
 			};
 
-			template <class G>
-			struct Verts<const G> : Verts<G> {
-			};
+			template <class G> constexpr bool has_verts = has_trait<Verts, G>;
 
 			template <class G>
-			struct Verts<std::reference_wrapper<G>> : Verts<G> {
+			struct Verts<std::reference_wrapper<G>, std::enable_if_t<has_verts<G>>> : Verts<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Verts<G>;
 				static decltype(auto) range(Ref ref) {
@@ -89,7 +99,8 @@ namespace graph {
 			};
 
 			// Canonical place to read graph edge traits.
-			template <class G, class = void> struct Edges {};
+			template <class G, class = void> struct Edges : _unimplemented {};
+			template <class G> struct Edges<const G> : Edges<G> {};
 			template <class G>
 			struct Edges<G,
 				std::void_t<
@@ -138,12 +149,10 @@ namespace graph {
 				}
 			};
 
-			template <class G>
-			struct Edges<const G> : Edges<G> {
-			};
+			template <class G> constexpr bool has_edges = has_trait<Edges, G>;
 
 			template <class G>
-			struct Edges<std::reference_wrapper<G>> : Edges<G> {
+			struct Edges<std::reference_wrapper<G>, std::enable_if_t<has_edges<G>>> : Edges<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Edges<G>;
 				static decltype(auto) range(Ref ref) {
@@ -180,7 +189,8 @@ namespace graph {
 			};
 
 			// Canonical place to read graph outgoing edge traits.
-			template <class G, class = void> struct Out_edges {};
+			template <class G, class = void> struct Out_edges : _unimplemented {};
+			template <class G> struct Out_edges<const G> : Out_edges<G> {};
 			template <class G>
 			struct Out_edges<G,
 				std::void_t<
@@ -200,25 +210,25 @@ namespace graph {
 				}
 			};
 
-			template <class G>
-			struct Out_edges<const G> : Out_edges<G> {};
+			template <class G> constexpr bool has_out_edges = has_trait<Out_edges, G>;
 
 			template <class G>
-			struct Out_edges<std::reference_wrapper<G>> : Out_edges<G> {
+			struct Out_edges<std::reference_wrapper<G>, std::enable_if_t<has_out_edges<G>>> : Out_edges<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Out_edges<G>;
 				static decltype(auto) range(Ref ref,
 					const typename Base::key_type& v) {
-					return Base::range(ref.get(), v);
+					return Base::range(ref, v);
 				}
 				static decltype(auto) size(Ref ref,
 					const typename Base::key_type& v) {
-					return Base::size(ref.get(), v);
+					return Base::size(ref, v);
 				}
 			};
 
 			// Canonical place to read graph incoming edge traits.
-			template <class G, class = void> struct In_edges {};
+			template <class G, class = void> struct In_edges : _unimplemented {};
+			template <class G> struct In_edges<const G> : In_edges<G> {};
 			template <class G>
 			struct In_edges<G,
 				std::void_t<
@@ -238,20 +248,19 @@ namespace graph {
 				}
 			};
 
-			template <class G>
-			struct In_edges<const G> : In_edges<G> {};
+			template <class G> constexpr bool has_in_edges = has_trait<In_edges, G>;
 
 			template <class G>
-			struct In_edges<std::reference_wrapper<G>> : In_edges<G> {
+			struct In_edges<std::reference_wrapper<G>, std::enable_if_t<has_in_edges<G>>> : In_edges<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = In_edges<G>;
 				static decltype(auto) range(Ref ref,
 					const typename Base::key_type& v) {
-					return Base::range(ref.get(), v);
+					return Base::range(ref, v);
 				}
 				static decltype(auto) size(Ref ref,
 					const typename Base::key_type& v) {
-					return Base::size(ref.get(), v);
+					return Base::size(ref, v);
 				}
 			};
 
@@ -271,7 +280,7 @@ namespace graph {
 				template <class... Args>
 				static typename Verts<G>::value_type insert(Ref ref,
 					Args&&... args) {
-					return Insert_verts<G>::insert(ref.get(),
+					return Insert_verts<G>::insert(ref,
 						std::forward<Args>(args)...);
 				}
 			};
@@ -292,18 +301,12 @@ namespace graph {
 				template <class... Args>
 				static typename Edges<G>::value_type insert(Ref ref,
 					Args&&... args) {
-					return Insert_edges<G>::insert(ref.get(),
+					return Insert_edges<G>::insert(ref,
 						std::forward<Args>(args)...);
 				}
 			};
 
-			template <class G, class = void> struct is_out_edge_graph : std::false_type {};
-			template <class G> struct is_out_edge_graph<G, std::void_t<typename Out_edges<G>::value_type>> : std::true_type {};
-			template <class G> constexpr bool is_out_edge_graph_v = is_out_edge_graph<G>{}();
-
-			template <class G, class = void> struct is_in_edge_graph : std::false_type {};
-			template <class G> struct is_in_edge_graph<G, std::void_t<typename In_edges<G>::value_type>> : std::true_type {};
-			template <class G> constexpr bool is_in_edge_graph_v = is_in_edge_graph<G>{}();
+			template <class G> constexpr bool has_bi_edges = has_out_edges<G> && has_in_edges<G>;
 
 			// Adjacency tags
 			struct Out {};

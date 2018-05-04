@@ -235,6 +235,11 @@ SCENARIO("stable bi-adjacency lists behave properly", "[Stable_bi_adjacency_list
 				t = gt.insert_vert();
 			gt.insert_edge(s, t);
 		}
+		WHEN("viewed in reverse") {
+			assert(g.size()); // sanity check on the test itself
+			auto rg = g.reverse_view();
+			Bi_edge_graph_tester rgt{rg};
+		}
 		WHEN("searching for the shortest path between vertices") {
 			auto weight = g.edge_map(0.0);
 			const double epsilon = 0.001;

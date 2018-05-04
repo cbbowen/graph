@@ -21,6 +21,10 @@ struct Graph_tester {
 		em(g.edge_map(g.null_edge())),
 		vs(g.vert_set()),
 		es(g.edge_set()) {
+		// null objects
+		REQUIRE(g.is_null(g.null_vert()));
+		REQUIRE(g.is_null(g.null_edge()));
+		
 		// prepare vert map
 		for (auto v : g.verts()) {
 			// all verts are unique
@@ -144,7 +148,8 @@ struct Graph_tester {
 	auto test_insert_vert(Vert_inserter vert_inserter) {
 		auto m = g.order();
 		V v = std::invoke(std::move(vert_inserter), g);
-		// new vert is unique
+		// new vert is unique and non-null
+		REQUIRE(!g.is_null(v));
 		REQUIRE(vm(v) == g.null_vert());
 		vm[v] = v;
 		REQUIRE(vm(v) == v);
@@ -163,7 +168,8 @@ struct Graph_tester {
 	auto test_insert_edge(Edge_inserter edge_inserter, V s, V t) {
 		auto n = g.size();
 		E e = std::invoke(std::move(edge_inserter), g, std::move(s), std::move(t));
-		// new edge is unique
+		// new edge is unique and non-null
+		REQUIRE(!g.is_null(e));
 		REQUIRE(em(e) == g.null_edge());
 		em[e] = e;
 		REQUIRE(em(e) == e);

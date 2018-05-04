@@ -28,6 +28,8 @@ auto [tree, distance] = g.shortest_paths_from(g.random_vert(random), weight);
 std::cout << tree.dot_format("distance"_of_vert = distance) << std::endl;
 ```
 
+For more examples, take a look in the `example` directory.  To compile and run any example file `NAME.cpp`, simply `make NAME` in that directory.  If you're already familiar with the extensive Boost.Graph library, `example/bgl.cpp` should provide a nice transition.
+
 # Efficient
 
 This library firmly embraces the philosophy that you only pay for what you use.  For example, it provides graphs that support removal and those that do not, because this capability impacts the performance characteristics of the data structure.  Where possible, it employs cache-friendly, contiguous layouts.
@@ -61,17 +63,17 @@ template <class Impl>
 void f(const graph::Graph<Impl>& g);
 ```
 
-This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defined below.
+This works similarly for the `Out_edge_graph`, `In_edge_graph`, and `Bi_edge_graph` concepts defined below.
 
 | Concept                  | Member                                          | Semantics
 |:------------------------ |:----------------------------------------------- |:----------
-| `Graph`                  | `Vert : EqualityComparable, LessThanComparable, Hashable` | Vertex
+| `Graph`                  | `struct Vert : EqualityComparable, LessThanComparable, Hashable` | Vertex
 |                          | `verts() const ⟶ Range<Vert>`                  | Range over all vertices
 |                          | `null_vert() const ⟶ Vert`                     | Unique vertex which will never comparable equal to one in the graph
 |                          | `order() const ⟶ unsigned`                     | `size(verts())`
 |                          | `vert_map<T>(T d = {}) ⟶ Map<Vert, T>`         | New map from vertices to `d`
 |                          | `vert_set() ⟶ Set<Vert>`                       | New empty set of vertices
-|                          | `Edge : EqualityComparable, LessThanComparable, Hashable`  | Edge
+|                          | `struct Edge : EqualityComparable, LessThanComparable, Hashable`  | Edge
 |                          | `edges() const ⟶ Range<Edge>`                  | Range over all edges
 |                          | `null_edge() const ⟶ Edge`                     | Unique edge which will never compare equal to one in the graph
 |                          | `tail(Edge e) const ⟶ Vert`                    | Tail (or source) of `e`
@@ -89,9 +91,10 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 |                          | * `in_subtree<Adjacency>(root) ⟶ In_subtree`   | New empty subtree with edges down from a given root
 | `Out_edge_graph : Graph` | `out_edges(Vert) const ⟶ Range<Edge>`          | Range over all edges with a given tail
 |                          | `out_degree(Vert v) const ⟶ unsigned`          | `size(out_edges(v))`
-| `In_edge_graph : Graph`| `in_edges(Vert) const ⟶ Range<Edge>`  | Range over all edges with a given head
+| `In_edge_graph : Graph`  | `in_edges(Vert) const ⟶ Range<Edge>`  | Range over all edges with a given head
 |                          | `in_degree(Vert v) const ⟶ unsigned`           | `size(in_edges(v))`
-| `Set<K> : Range<K>`| `contains(K k) const ⟶ bool`              | Check if set contains `k`
+| `Bi_edge_graph : Out_edge_graph, In_edge_graph` | |
+| `Set<K> : Range<K>`      | `contains(K k) const ⟶ bool`              | Check if set contains `k`
 |                          | `size() const ⟶ unsigned`                      | Size of set
 |                          | `insert(K k) ⟶ bool`                           | Insert `k` if it is not in the set, and return indicating if it was inserted
 |                          | ** `erase(K k) ⟶ bool`                         | Remove `k` if it is in the set, and return indicating if it was removed
@@ -101,14 +104,14 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 |                          | ** `assign(K k, T t)`                           | Associate `t` with `k`
 |                          | ** `exchange(K k, T t) ⟶ T`                    | Associate `t` with `k` and return the old value
 
-| Algorithm                  | Usage                                       | Result                               | Semantics
-| --------------------------:|:------------------------------------------- |:------------------------------------:|:----------
-| Dijkstra's                 | `g.shortest_paths_from(v, w, ...)`          | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` from `v` to all other reachable vertices
-|                            | `g.shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
-| Prim's                     | `g.minimum_tree_reachable_from(v, w, ...)`  | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
-|                            | `g.minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
-| Bidirectional Search       | ** `g.shortest_path(s, t, w, ...)`          | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t`
-|                            | ** `g.parallel_shortest_path(s, t, w, ...)` | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
+| Algorithm                  | Usage                                                    | Result                               | Semantics
+| --------------------------:|:-------------------------------------------------------- |:------------------------------------:|:----------
+| Dijkstra's                 | `Out_edge_graph::shortest_paths_from(v, w, ...)`         | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` from `v` to all other reachable vertices
+|                            | `In_edge_graph::shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
+| Prim's                     | `Out_edge_graph::minimum_tree_reachable_from(v, w, ...)` | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
+|                            | `In_edge_graph::minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
+| Bidirectional Search       | ** `Bi_edge_graph::shortest_path(s, t, w, ...)`          | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t`
+|                            | ** `Bi_edge_graph::parallel_shortest_path(s, t, w, ...)` | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
 
 \* Advanced API that should be avoided except in generic code or when performance is critical.
 
@@ -116,4 +119,4 @@ This works similarly for the `Out_edge_graph` and `In_edge_graph` concepts defin
 
 # Contributing
 
-If you find a bug or there is a data structure or algorithm you think should be added, please create an issue.  Or if you're feeling ambitious, implement the changes yourself and send a pull request.
+If you find a bug or there is a data structure or algorithm you think should be added, please create an issue.  Or if you're feeling ambitious, implement the changes yourself and send a pull request.  Additional examples are also welcome!

@@ -455,7 +455,6 @@ namespace graph {
 			auto shortest_paths_from(const Vert& s, const Weight& weight,
 				const Compare& compare = {}, const Combine& combine = {}) const;
 
-			auto reverse_view() const;
 			// auto scc() const;
 
 			template <class WM, class Compare = std::less<>>
@@ -487,7 +486,6 @@ namespace graph {
 			auto shortest_paths_to(const Vert& t, const Weight& weight,
 				const Compare& compare = {}, const Combine& combine = {}) const;
 
-			auto reverse_view() const;
 			// auto scc() const;
 
 			template <class WM, class Compare = std::less<>>
@@ -510,7 +508,9 @@ namespace graph {
 			template <class... Args,
 				class = std::enable_if_t<std::is_constructible_v<_base_type, Args&&...>>>
 			Bi_edge_graph(Args&&... args) :
-				_base_type(std::forward<Args>(args)...) {
+				_base_type(std::forward<Args>(args)...),
+				Out_edge_graph<Impl>(_base_type::_impl()),
+				In_edge_graph<Impl>(_base_type::_impl()) {
 			}
 
 			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
@@ -542,8 +542,8 @@ namespace graph {
 		template <class Impl>
 		auto _wrap_graph(Impl&& impl) {
 			constexpr bool
-				out = impl::traits::is_out_edge_graph_v<Impl>,
-				in = impl::traits::is_in_edge_graph_v<Impl>;
+				out = impl::traits::has_out_edges<Impl>,
+				in = impl::traits::has_in_edges<Impl>;
 			using Wrapper =
 				std::conditional_t<out && in, Bi_edge_graph<Impl>,
 				std::conditional_t<out, Out_edge_graph<Impl>,

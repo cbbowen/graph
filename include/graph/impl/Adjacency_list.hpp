@@ -272,6 +272,8 @@ namespace graph {
 				}
 			};
 
+			static_assert(traits::has_out_edges<Out_adjacency_list<>>);
+
 			template <template <class, class, class...> class Map_ = std::map>
 			struct In_adjacency_list : Adjacency_list_base<Map_> {
 				using _base_type = Adjacency_list_base<Map_>;
@@ -295,6 +297,8 @@ namespace graph {
 					return _base_type::_insert_edge(std::move(t), std::move(s));
 				}
 			};
+
+			static_assert(traits::has_in_edges<In_adjacency_list<>>);
 
 			template <class Order_ = std::size_t, class Size_ = std::size_t>
 			struct Bi_adjacency_list : Edge_list<Order_, Size_> {
@@ -350,6 +354,8 @@ namespace graph {
 			private:
 				_alist_type _alist;
 			};
+
+			static_assert(traits::has_bi_edges<Bi_adjacency_list<>>);
 		}
 	}
 }

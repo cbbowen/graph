@@ -79,7 +79,9 @@ namespace graph {
 					}
 				};
 				template <class G>
-				struct Out_edges<Reverse<G>> : In_edges<G> {
+				struct Out_edges<Reverse<G>,
+					std::enable_if_t<traits::has_in_edges<G>>> :
+					In_edges<G> {
 					using R = Reverse<G>;
 					using _base_type = In_edges<G>;
 					using key_type = typename _base_type::key_type;
@@ -91,7 +93,9 @@ namespace graph {
 					}
 				};
 				template <class G>
-				struct In_edges<Reverse<G>> : Out_edges<G> {
+				struct In_edges<Reverse<G>,
+					std::enable_if_t<traits::has_out_edges<G>>> :
+					Out_edges<G> {
 					using R = Reverse<G>;
 					using _base_type = Out_edges<G>;
 					using key_type = typename _base_type::key_type;
