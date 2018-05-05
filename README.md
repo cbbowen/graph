@@ -30,6 +30,8 @@ std::cout << tree.dot_format("distance"_of_vert = distance) << std::endl;
 
 For more examples, take a look in the `example` directory.  To compile and run any example file `NAME.cpp`, simply `make NAME` in that directory.  If you're already familiar with the extensive Boost.Graph library, `example/bgl.cpp` should provide a nice transition.
 
+The [table of data structures](doc/Data_structures.md) is a good place to dive into the documentation.
+
 # Efficient
 
 This library firmly embraces the philosophy that you only pay for what you use.  For example, it provides graphs that support removal and those that do not, because this capability impacts the performance characteristics of the data structure.  Where possible, it employs cache-friendly, contiguous layouts.
@@ -38,23 +40,7 @@ This library firmly embraces the philosophy that you only pay for what you use. 
 
 By using a trait-driven implementation, everything is kept header-only and generic.  If your use case requires a specialized data structure, you need only implement the appropriate traits and all the algorithms implemented immediately become available.
 
-This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.
-
-| Header                              | Data Structure              | Insertion | Removal | Query Outgoing | Query Incoming |
-| -----------------------------------:|:--------------------------- |:---------:|:-------:|:--------------:|:--------------:|
-| `<graph/Edge_list.hpp>`             | `Edge_list`                 | ✓         | ✓       |                |                |
-| `<graph/Adjacency_list.hpp>`        | `Out_adjacency_list`        | ✓         | ✓       | ✓              |                |
-|                                     | `In_adjacency_list`         | ✓         | ✓       |                | ✓              |
-|                                     | `Bi_adjacency_list`         | ✓         | ✓       | ✓              | ✓              |
-| `<graph/Stable_edge_list.hpp>`      | `Stable_edge_list`          | ✓         |         |                |                |
-| `<graph/Stable_adjacency_list.hpp>` | `Stable_out_adjacency_list` | ✓         |         | ✓              |                |
-|                                     | `Stable_in_adjacency_list`  | ✓         |         |                | ✓              |
-|                                     | `Stable_bi_adjacency_list`  | ✓         |         | ✓              | ✓              |
-| `<graph/Atomic_edge_list.hpp>`      | `Atomic_edge_list`          | _atomic_  |         |                |                |
-| `<graph/Atomic_adjacency_list.hpp>` | `Atomic_out_adjacency_list` | _atomic_  |         | _atomic_       |                |
-|                                     | `Atomic_out_adjacency_list` | _atomic_  |         |                | _atomic_       |
-
-Note that the data structures that do not support removal are generally prefixed with `Stable_` to indicate that their vertices and edges are never invalidated.  To enable application to parallel domains, lock-free `Atomic_` graphs are also available.
+This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.  The [documentation](doc/Data_structures.md) includes a table of the data structures provided and their capabilities.
 
 To declare a function accepting a generic `Graph` all you need to write is:
 
@@ -63,59 +49,7 @@ template <class Impl>
 void f(const graph::Graph<Impl>& g);
 ```
 
-This works similarly for the `Out_edge_graph`, `In_edge_graph`, and `Bi_edge_graph` concepts defined below.
-
-| Concept                  | Member                                          | Semantics
-|:------------------------ |:----------------------------------------------- |:----------
-| `Graph`                  | `struct Vert : EqualityComparable, LessThanComparable, Hashable` | Vertex
-|                          | `verts() const ⟶ Range<Vert>`                  | Range over all vertices
-|                          | `null_vert() const ⟶ Vert`                     | Unique vertex which will never comparable equal to one in the graph
-|                          | `order() const ⟶ unsigned`                     | `size(verts())`
-|                          | `vert_map<T>(T d = {}) ⟶ Map<Vert, T>`         | New map from vertices to `d`
-|                          | `vert_set() ⟶ Set<Vert>`                       | New empty set of vertices
-|                          | `struct Edge : EqualityComparable, LessThanComparable, Hashable`  | Edge
-|                          | `edges() const ⟶ Range<Edge>`                  | Range over all edges
-|                          | `null_edge() const ⟶ Edge`                     | Unique edge which will never compare equal to one in the graph
-|                          | `tail(Edge e) const ⟶ Vert`                    | Tail (or source) of `e`
-|                          | `head(Edge e) const ⟶ Vert`                    | Head (or target) of `e`
-|                          | `size() const ⟶ unsigned`                      | `size(edges())`
-|                          | `edge_map<T>(T d = {}) ⟶ Map<Edge, T>`         | New map from edges to `d`
-|                          | `edge_set() ⟶ Set<Edge>`                       | New empty set of edges
-|                          | * `ephemeral_vert_map<T>(T d = {}) ⟶ Map<Vert, T>`| New map from vertices to `d` — changing the graph during the lifetime of an ephemeral object is undefined beahavior
-|                          | * `ephemeral_vert_set() ⟶ Set<Vert>`              | New empty set of vertices — changing the graph during the lifetime of an ephemeral object is undefined beahavior
-|                          | * `ephemeral_edge_map<T>(T d = {}) ⟶ Map<Edge, T>`| New map from edges to `d` — changing the graph during the lifetime of an ephemeral object is undefined beahavior
-|                          | * `ephemeral_edge_set() ⟶ Set<Edge>`              | New empty set of edges — changing the graph during the lifetime of an ephemeral object is undefined beahavior
-|                          | * `out_subforest<Adjacency>() ⟶ Out_subforest` | New empty subforest with edges up to roots
-|                          | * `in_subforest<Adjacency>() ⟶ In_subforest`   | New empty subforest with edges down from roots
-|                          | * `out_subtree<Adjacency>(root) ⟶ Out_subtree` | New empty subtree with edges up to a given root
-|                          | * `in_subtree<Adjacency>(root) ⟶ In_subtree`   | New empty subtree with edges down from a given root
-| `Out_edge_graph : Graph` | `out_edges(Vert) const ⟶ Range<Edge>`          | Range over all edges with a given tail
-|                          | `out_degree(Vert v) const ⟶ unsigned`          | `size(out_edges(v))`
-| `In_edge_graph : Graph`  | `in_edges(Vert) const ⟶ Range<Edge>`  | Range over all edges with a given head
-|                          | `in_degree(Vert v) const ⟶ unsigned`           | `size(in_edges(v))`
-| `Bi_edge_graph : Out_edge_graph, In_edge_graph` | |
-| `Set<K> : Range<K>`      | `contains(K k) const ⟶ bool`              | Check if set contains `k`
-|                          | `size() const ⟶ unsigned`                      | Size of set
-|                          | `insert(K k) ⟶ bool`                           | Insert `k` if it is not in the set, and return indicating if it was inserted
-|                          | ** `erase(K k) ⟶ bool`                         | Remove `k` if it is in the set, and return indicating if it was removed
-|                          | ** `clear()`                                    | Make the set empty
-| `Map<K,T>`               | `operator()(K k) const ⟶ const T&`             | Read-only value associated with `k`
-|                          | `operator[](K k) ⟶ T&`                         | Writable value associated with `k`
-|                          | ** `assign(K k, T t)`                           | Associate `t` with `k`
-|                          | ** `exchange(K k, T t) ⟶ T`                    | Associate `t` with `k` and return the old value
-
-| Algorithm                  | Usage                                                    | Result                               | Semantics
-| --------------------------:|:-------------------------------------------------------- |:------------------------------------:|:----------
-| Dijkstra's                 | `Out_edge_graph::shortest_paths_from(v, w, ...)`         | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` from `v` to all other reachable vertices
-|                            | `In_edge_graph::shortest_paths_to(v, w, ...)`            | `pair<Subtree, Map<Vert, Distance>>` | Finds the paths with minimum total edge weights `w(e)` to `v` from all verticies which can reach it
-| Prim's                     | `Out_edge_graph::minimum_tree_reachable_from(v, w, ...)` | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` to all vertices reachable from `v`
-|                            | `In_edge_graph::minimum_tree_reaching_to(v, w, ...)`     | `Subtree`                            | Finds the spanning tree with minimum total edge weights `w(e)` from all vertices from which `v` is reachable
-| Bidirectional Search       | ** `Bi_edge_graph::shortest_path(s, t, w, ...)`          | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t`
-|                            | ** `Bi_edge_graph::parallel_shortest_path(s, t, w, ...)` | `Path`                               | Finds path with minimum total edge weights `w(e)` from `s` to `t` using multiple cores
-
-\* Advanced API that should be avoided except in generic code or when performance is critical.
-
-\** Experimental API that may change without notice.
+This works similarly for the [`Out_edge_graph`](doc/Out_edge_graph.md), [`In_edge_graph`](doc/In_edge_graph.md), and [`Bi_edge_graph`](doc/Bi_edge_graph.md) concepts.
 
 # Contributing
 
