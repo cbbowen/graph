@@ -46,6 +46,13 @@ namespace graph {
 				T exchange(const key_type& k, U&& u) {
 					return std::exchange((*this)[k], std::forward<U>(u));
 				}
+				bool operator==(const ephemeral_contiguous_key_map& other) const {
+					// It is undefined behavior to change the underlying graph during the lifetime of *this or other, so we can safely assume these have identical domains.
+					return _map == other._map;
+				}
+				bool operator!=(const ephemeral_contiguous_key_map& other) const {
+					return !(*this == other);
+				}
 			private:
 				_container_type _map;
 			};
@@ -91,6 +98,7 @@ namespace graph {
 				void _reserve(std::size_t capacity) override {
 					reserve(capacity);
 				}
+				// TODO: Figure out how best to implement operator== given that equality should only be over the domain of vertices _currently in the graph_.
 			private:
 				T _default;
 				_container_type _map;
@@ -137,6 +145,13 @@ namespace graph {
 				}
 				iterator end() const {
 					return _container.end();
+				}
+				bool operator==(const ephemeral_contiguous_key_set& other) const {
+					// It is undefined behavior to change the underlying graph during the lifetime of *this or other, so we can safely assume these have identical domains.
+					return _flags == other._flags;
+				}
+				bool operator!=(const ephemeral_contiguous_key_set& other) const {
+					return !(*this == other);
 				}
 			private:
 				ephemeral_contiguous_key_map<key_type, flag_type> _flags;

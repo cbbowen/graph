@@ -12,6 +12,7 @@ namespace graph {
 			struct unordered_key_map {
 				using key_type = K;
 				using inner_key_type = typename key_type::key_type;
+				using _container_type = std::unordered_map<inner_key_type, T>;
 				unordered_key_map(T default_) :
 					_default(std::move(default_)) {
 				}
@@ -43,9 +44,10 @@ namespace graph {
 				void _clear() {
 					_map.clear();
 				}
+				// TODO: Figure out how best to implement operator== given that equality should only be over the domain of vertices _currently in the graph_.
 			protected:
 				T _default;
-				std::unordered_map<inner_key_type, T> _map;
+				_container_type _map;
 			};
 		}
 	}
