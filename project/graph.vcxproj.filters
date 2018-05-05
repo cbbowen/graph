@@ -36,9 +36,6 @@
     <ClCompile Include="..\test\Stable_edge_list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\Contiguous_atomic_adjacency_list.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp">
@@ -63,9 +60,6 @@
       <Filter>Header Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graph\impl\construct_fn.hpp">
-      <Filter>Header Files\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graph\impl\Depth_first_search.hpp">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graph\impl\Edge_list.hpp">
@@ -96,9 +90,6 @@
       <Filter>Header Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graph\impl\Stable_vert_list.hpp">
-      <Filter>Header Files\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graph\impl\Strongly_connected_components.hpp">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graph\impl\tracker.hpp">
@@ -143,10 +134,19 @@
     <ClInclude Include="..\include\graph\impl\Path.hpp">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graph\impl\Contiguous_atomic_adjacency_list.hpp">
+    <ClInclude Include="..\include\graph\impl\Atomic_edge_list.hpp">
       <Filter>Header Files\impl</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graph\Contiguous_atomic_adjacency_list.hpp">
+    <ClInclude Include="..\include\graph\impl\Atomic_vert_list.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\impl\reservable_base.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\Atomic_edge_list.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graph\floyd_warshall.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -161,9 +161,6 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\reverse.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\include\graph\scc.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\subforest.inl">

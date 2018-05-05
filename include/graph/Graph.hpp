@@ -358,8 +358,15 @@ namespace graph {
 
 			// Construct a new view of this graph as an empty tree with edges up to a given root.
 			auto out_subtree(Vert target) const { return _subtree<impl::traits::Out>(target); }
+			auto null_out_subtree() const { return out_subtree(null_vert()); }
 			// Construct a new view of this graph as an empty tree with edges down from a given root.
 			auto in_subtree(Vert source) const { return _subtree<impl::traits::In>(source); }
+			auto null_in_subtree() const { return in_subtree(null_vert()); }
+
+			// Finds the shortest paths between all pairs of vertices
+			template <class Weight, class Compare = std::less<>, class Combine = std::plus<>>
+			auto all_pairs_shortest_paths(const Weight& weight,
+				const Compare& compare = {}, const Combine& combine = {}) const;
 
 			// Construct a view of this graph which can be streamed to and from dot format.
 			template <class... Args>
@@ -560,6 +567,7 @@ namespace graph {
 #include "reverse.inl"
 #include "subforest.inl"
 //#include "scc.inl"
+#include "floyd_warshall.inl"
 #include "bidirectional_search.inl"
 #include "parallel_bidirectional_search.inl"
 #include "format.inl"

@@ -68,7 +68,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\test\Contiguous_atomic_adjacency_list.cpp" />
     <ClCompile Include="..\test\Edge_list.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -87,16 +86,17 @@
   <ItemGroup>
     <ClInclude Include="..\include\graph\Adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Atomic_adjacency_list.hpp" />
-    <ClInclude Include="..\include\graph\Contiguous_atomic_adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\Atomic_edge_list.hpp" />
     <ClInclude Include="..\include\graph\Edge_list.hpp" />
+    <ClInclude Include="..\include\graph\floyd_warshall.hpp" />
     <ClInclude Include="..\include\graph\Graph.hpp" />
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Atomic_adjacency_list.hpp" />
+    <ClInclude Include="..\include\graph\impl\Atomic_edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\atomic_list.hpp" />
+    <ClInclude Include="..\include\graph\impl\Atomic_vert_list.hpp" />
     <ClInclude Include="..\include\graph\impl\construct_fn.hpp" />
-    <ClInclude Include="..\include\graph\impl\Contiguous_atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\contiguous_key_map.hpp" />
-    <ClInclude Include="..\include\graph\impl\Depth_first_search.hpp" />
     <ClInclude Include="..\include\graph\impl\Edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\erasable_base.hpp" />
     <ClInclude Include="..\include\graph\impl\exceptions.hpp" />
@@ -106,11 +106,11 @@
     <ClInclude Include="..\include\graph\impl\omp.hpp" />
     <ClInclude Include="..\include\graph\impl\Path.hpp" />
     <ClInclude Include="..\include\graph\impl\pointer_wrapper.hpp" />
+    <ClInclude Include="..\include\graph\impl\reservable_base.hpp" />
     <ClInclude Include="..\include\graph\impl\Reverse.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_vert_list.hpp" />
-    <ClInclude Include="..\include\graph\impl\Strongly_connected_components.hpp" />
     <ClInclude Include="..\include\graph\impl\Subforest.hpp" />
     <ClInclude Include="..\include\graph\impl\tracker.hpp" />
     <ClInclude Include="..\include\graph\impl\traits.hpp" />
@@ -129,7 +129,6 @@
     <None Include="..\include\graph\parallel_bidirectional_search.inl" />
     <None Include="..\include\graph\random.inl" />
     <None Include="..\include\graph\reverse.inl" />
-    <None Include="..\include\graph\scc.inl" />
     <None Include="..\include\graph\subforest.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -9,6 +9,7 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
+			// Subforests
 			template <class Adjacency, class G>
 			class Subforest_base {
 				using Verts = traits::Verts<G>;
@@ -19,7 +20,7 @@ namespace graph {
 				using Edge = typename Edges::value_type;
 				using Size = typename Edges::size_type;
 				Subforest_base(const G& g) : _g(g),
-					_edges(_g.get().ephemeral_vert_map(_g.get().null_edge())) {
+					_edges(_g.get().vert_map(_g.get().null_edge())) {
 				}
 				auto verts() const {
 					return Verts::range(_g);
@@ -127,7 +128,7 @@ namespace graph {
 
 			protected:
 				std::reference_wrapper<const G> _g;
-				typename Verts::template ephemeral_map_type<Edge> _edges;
+				typename Verts::template map_type<Edge> _edges;
 				typename Edges::size_type _size = 0;
 			};
 			template <class Adjacency, class G>
@@ -150,7 +151,7 @@ namespace graph {
 					return this->_key_degree(v);
 				}
 				auto path_to_root_from(const Vert& v) const {
-					auto [u, edges] = this->_key_path(v);
+					auto [r, edges] = this->_key_path(v);
 					return Path<G>(this->_g, v, std::move(edges));
 				}
 			};
@@ -172,27 +173,57 @@ namespace graph {
 					return this->_key_degree(v);
 				}
 				auto path_from_root_to(const Vert& v) const {
-					auto [u, edges] = this->_key_path(v);
+					auto [r, edges] = this->_key_path(v);
 					std::reverse(edges.begin(), edges.end());
-					return Path<G>(this->_g, std::move(u), std::move(edges));
+					return Path<G>(this->_g, std::move(r), std::move(edges));
 				}
 			};
+
+			// Subtrees
 			template <class Adjacency, class G>
-			struct Subtree : Subforest<Adjacency, G> {
+			struct Subtree_base : Subforest<Adjacency, G> {
 				using _base_type = Subforest<Adjacency, G>;
 				using Vert = typename _base_type::Vert;
-				Subtree(const G& g, Vert root) :
+				Subtree_base(const G& g, Vert root) :
 					_base_type(g), _root(std::move(root)) {
 				}
 				Vert root() const {
 					return _root;
 				}
-				bool is_root(const Vert& v) const = delete;
+				bool is_root(const Vert& v) const {
+					return v == root();
+				}
 				bool in_tree(const Vert& v) {
-					return !_base_type::is_root(v) || v == root();
+					return !_base_type::is_root(v) || is_root(v);
 				}
 			private:
 				Vert _root;
+			};
+			template <class Adjacency, class G> struct Subtree;
+			template <class G>
+			struct Subtree<traits::Out, G> : Subtree_base<traits::Out, G> {
+				using _base_type = Subtree_base<traits::Out, G>;
+				using Vert = typename _base_type::Vert;
+				using _base_type::_base_type;
+				auto path_to_root_from(const Vert& v) const {
+					auto [r, edges] = this->_key_path(v);
+					if (!this->is_root(r))
+						return Path<G>(this->_g);
+					return Path<G>(this->_g, v, std::move(edges));
+				}
+			};
+			template <class G>
+			struct Subtree<traits::In, G> : Subtree_base<traits::In, G> {
+				using _base_type = Subtree_base<traits::In, G>;
+				using Vert = typename _base_type::Vert;
+				using _base_type::_base_type;
+				auto path_from_root_to(const Vert& v) const {
+					auto [r, edges] = this->_key_path(v);
+					if (!this->is_root(r))
+						return Path<G>(this->_g);
+					std::reverse(edges.begin(), edges.end());
+					return Path<G>(this->_g, std::move(r), std::move(edges));
+				}
 			};
 			namespace traits {
 				// TODO: This should specialize Verts and Edges to avoid typedef repetition above
