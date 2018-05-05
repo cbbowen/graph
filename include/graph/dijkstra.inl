@@ -66,7 +66,7 @@ namespace graph {
 			const Compare& compare, const Combine& combine) const {
 			// TODO: Convert these to parameters
 			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
-			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
+			auto zero = D{}, inf = std::numeric_limits<D>::max();
 
 			auto [tree, distance] = impl::_dijkstra<impl::traits::Out>(this->_impl(), s, weight, compare, combine, zero, inf);
 			return std::make_pair(_wrap_graph(std::move(tree)), std::move(distance));
@@ -77,7 +77,7 @@ namespace graph {
 			const Compare& compare, const Combine& combine) const {
 			// TODO: Convert these to parameters
 			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
-			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
+			auto zero = D{}, inf = std::numeric_limits<D>::max();
 
 			auto [tree, distance] = impl::_dijkstra<impl::traits::In>(this->_impl(), t, weight, compare, combine, zero, inf);
 			return std::make_pair(_wrap_graph(std::move(tree)), std::move(distance));

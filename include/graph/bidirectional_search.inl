@@ -57,7 +57,7 @@ namespace graph {
 			const Compare& compare, const Combine& combine) const -> Path {
 			// TODO: Convert these to parameters
 			using D = std::decay_t<std::result_of_t<const Weight&(Edge)>>;
-			auto zero = D{}, inf = std::numeric_limits<D>::infinity();
+			auto zero = D{}, inf = std::numeric_limits<D>::max();
 
 			using pair_type = std::pair<D, Vert>;
 			struct queue_compare {
