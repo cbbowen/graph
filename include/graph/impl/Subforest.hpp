@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <range/v3/view/transform.hpp>
 #include <range/v3/view/remove_if.hpp>
 #include <range/v3/view/single.hpp>
@@ -121,8 +123,13 @@ namespace graph {
 				}
 				std::pair<Vert, std::vector<Edge>> _key_path(Vert v) const {
 					std::vector<Edge> path;
-					for (Edge e; (e = _edges(v)) != null_edge(); path.push_back(e))
+					for (Edge e; (e = _edges(v)) != null_edge(); path.push_back(e)) {
+#if GRAPH_CHECK_PRECONDITIONS
+						check_precondition(std::find(path.begin(), path.end(), e) == path.end(),
+							"forest must be acyclic");
+#endif
 						v = traits::adjacency_cokey<Adjacency>(_g, e);
+					}
 					return std::make_pair(v, path);
 				}
 

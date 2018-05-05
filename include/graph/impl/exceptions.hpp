@@ -10,7 +10,7 @@
 
 namespace graph {
 	inline namespace v1 {
-		class precondition_unmet : std::logic_error {
+		class precondition_unmet : public std::logic_error {
 			using logic_error::logic_error;
 		};
 		namespace impl {
