@@ -146,9 +146,6 @@
     <ClInclude Include="..\include\graph\Atomic_edge_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graph\floyd_warshall.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\graph\dijkstra.inl">
@@ -170,6 +167,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\parallel_bidirectional_search.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\include\graph\floyd_warshall.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

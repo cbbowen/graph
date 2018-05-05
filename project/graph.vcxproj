@@ -88,7 +88,6 @@
     <ClInclude Include="..\include\graph\Atomic_adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\Atomic_edge_list.hpp" />
     <ClInclude Include="..\include\graph\Edge_list.hpp" />
-    <ClInclude Include="..\include\graph\floyd_warshall.hpp" />
     <ClInclude Include="..\include\graph\Graph.hpp" />
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Atomic_adjacency_list.hpp" />
@@ -125,6 +124,7 @@
   <ItemGroup>
     <None Include="..\include\graph\bidirectional_search.inl" />
     <None Include="..\include\graph\dijkstra.inl" />
+    <None Include="..\include\graph\floyd_warshall.inl" />
     <None Include="..\include\graph\format.inl" />
     <None Include="..\include\graph\parallel_bidirectional_search.inl" />
     <None Include="..\include\graph\random.inl" />

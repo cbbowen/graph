@@ -80,6 +80,10 @@ void some_function(const Graph<G>& g);
 | `random_vert(RNG&) const` | `Vert` | returns a vertex selected uniformly at random |
 | `random_edge(RNG&) const` | `Edge` | returns an edge selected uniformly at random |
 
+| Algorithms | | |
+|------------|-|-|
+| `all_pairs_shortest_paths<W>(Vert t, Map<Edge, W> w) const` | `pair<Map<Vert, In_subtree>, Map<Vert, Map<Vert, W>>>` | finds the paths between all pairs of vertices with minimum total edge weights |
+
 | * Ephemeral | | |
 |-------------|-|-|
 | `ephemeral_vert_set() const` | `Ephemeral_vert_set` | constructs an empty, mutable set of vertices |
@@ -92,6 +96,8 @@ void some_function(const Graph<G>& g);
 | `out_subforest() const` | `Out_subforest` | constructs an out-subforest with no edges |
 | `in_subforest() const` | `In_subforest` | constructs a in-subforest with no edges |
 | `out_subtree(Vert r) const` | `Out_subtree` | constructs an empty out-subtree rooted at `r` |
+| `null_out_subtree() const` | `Out_subtree` | constructs an out-subtree with no root |
 | `in_subtree(Vert r) const` | `In_subtree` | constructs an empty in-subtree rooted at `r` |
+| `null_in_subtree() const` | `In_subtree` | constructs an in-subtree with no root |
 
 \* _Advanced API that should be avoided except in generic code or when performance is critical._

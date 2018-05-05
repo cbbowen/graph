@@ -27,5 +27,5 @@ void some_function(const In_edge_graph<G>& g);
 
 | Algorithms | | |
 |------------|-|-|
-| `shortest_paths_to<W>(Vert t, Map<Edge, W> w)` | `pair<Out_subtree, Map<Vert, Distance>>>` | finds the paths to `t` with minimum total edge weights `w` from all vertices |
+| `shortest_paths_to<W>(Vert t, Map<Edge, W> w)` | `pair<Out_subtree, Map<Vert, W>>>` | finds the paths to `t` with minimum total edge weights `w` from all vertices |
 | `minimum_tree_reaching_to<W>(Vert s, Map<Edge, W> w)` | `Out_subtree` | finds the tree with minimum total edge weights `w` that spans vertices from which `v` is reachable |
