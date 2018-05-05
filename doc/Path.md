@@ -8,7 +8,7 @@ concept Path<Edge>;
 
 Represents a path through a graph.
 
-A path through a graph comprises a source vertex and a sequence of zero or more edges where the head of each vertex is the tail of the next.  Furthermore, the tail of the first edge, if it exists must be the source.  Similarly, if the last edge exists, we say the target of the path is its head.  Otherwise, the target is the same as the source and we say the path is trivial.
+A path through a graph comprises a source vertex and a sequence of zero or more edges where the head of each vertex is the tail of the next.  Furthermore, the tail of the first edge, if it exists must be the source.  Similarly, if the last edge exists, we say the target of the path is its head.  Otherwise, the target is the same as the source, and we say the path is trivial.
 
 ## Template parameters
 | Template parameters | |
