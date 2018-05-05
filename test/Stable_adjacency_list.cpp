@@ -77,19 +77,21 @@ SCENARIO("stable out-adjacency lists behave properly", "[Stable_out_adjacency_li
 				REQUIRE(!(distances(g.head(e)) > distances(g.tail(e)) + weight(e)));
 		}
 		WHEN("searching for the shortest paths between all pairs of vertices") {
-			auto weight = [](auto e) { return 1; };
-			auto distances = g.all_pairs_shortest_paths(weight);
-			//auto [trees, distances] = g.all_pairs_shortest_paths(weight);
-			//// Verify that the distances and trees agree
-			//for (auto s : g.verts()) {
-			//	for (auto t : g.verts()) {
-			//		auto path = trees(s).path_from_root_to(t);
-			//		if (g.is_null(path))
-			//			REQUIRE(distances(s)(t) >= g.order());
-			//		else
-			//			REQUIRE(distances(s)(t) == path.total(weight));
-			//	}
-			//}
+			auto weight = [](auto e) { return 1.0; };
+			auto [trees, distances] = g.all_pairs_shortest_paths(weight);
+			// Verify that the distances and trees agree
+			for (auto s : g.verts()) {
+				for (auto t : g.verts()) {
+					auto path = trees(s).path_from_root_to(t);
+					if (g.is_null(path)) {
+						REQUIRE(distances(s)(t) >= g.order());
+					} else {
+						REQUIRE(g.source(path) == s);
+						REQUIRE(g.target(path) == t);
+						REQUIRE(distances(s)(t) == path.total(weight));
+					}
+				}
+			}
 			// Verify that the distances are accurate
 			for (auto s : g.verts()) {
 				auto [_, distance_s] = g.shortest_paths_from(s, weight);
