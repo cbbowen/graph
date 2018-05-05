@@ -45,8 +45,8 @@ This doesn't mean you should usually need to do so, of course.  This library pro
 To declare a function accepting a generic `Graph` all you need to write is:
 
 ```cpp
-template <class Impl>
-void f(const graph::Graph<Impl>& g);
+template <class G>
+void some_function(const graph::Graph<G>& g);
 ```
 
 This works similarly for the [`Out_edge_graph`](doc/Out_edge_graph.md), [`In_edge_graph`](doc/In_edge_graph.md), and [`Bi_edge_graph`](doc/Bi_edge_graph.md) concepts.

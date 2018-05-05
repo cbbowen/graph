@@ -9,6 +9,13 @@ Represents a finite, directed graph.
 
 A [directed graph](https://en.wikipedia.org/wiki/Directed_graph) comprises a set of vertices and a set of edges.  Each edge has both a head vertex and a tail vertex which may or may not be equal.
 
+In this library, every data structure that satisfies this concept will be an instance of `Graph<...>`, so to require that a function argument satisfies it, you need only use a signature like the following:
+
+```c++
+template <class G>
+void some_function(const Graph<G>& g);
+```
+
 ## Member types
 | Member type | Definition
 |:----------- |:-----------

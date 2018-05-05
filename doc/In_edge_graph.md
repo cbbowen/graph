@@ -7,6 +7,13 @@ concept In_edge_graph : Graph;
 
 Extends the [`Graph`](Graph.md) concept with fast incoming edge queries.
 
+In this library, every data structure that satisfies this concept will be an instance of `In_edge_graph<...>`, so to require that a function argument satisfies it, you need only use a signature like the following:
+
+```c++
+template <class G>
+void some_function(const In_edge_graph<G>& g);
+```
+
 ## Member types
 | Member type | Definition
 |:----------- |:-----------
