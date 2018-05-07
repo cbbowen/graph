@@ -11,18 +11,21 @@ namespace graph {
 			template <class K, class T>
 			struct unordered_key_map {
 				using key_type = K;
+				using value_type = T;
+				using const_reference = const value_type&;
+				using reference = value_type&;
 				using inner_key_type = typename key_type::key_type;
 				using _container_type = std::unordered_map<inner_key_type, T>;
 				unordered_key_map(T default_) :
 					_default(std::move(default_)) {
 				}
-				const T& operator()(const key_type& k) const {
+				const_reference operator()(const key_type& k) const {
 					if (auto it = _map.find(k.key()); it != _map.end())
 						return it->second;
 					return _default;
 				}
 				// TODO: This usually double assigns the value on new keys, which can potentially be corrected by using a reference proxy, but achieving the correct semantics may be difficult.  To avoid this, use `assign` instead.
-				T& operator[](const key_type& k) {
+				reference operator[](const key_type& k) {
 					return _map.try_emplace(k.key(), _default).first->second;
 				}
 				template <class U>

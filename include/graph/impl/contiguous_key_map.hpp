@@ -16,10 +16,11 @@ namespace graph {
 				// One might reasonably wonder why we don't just use `std::vector<T>` here.  The reason is to make this usable with types that aren't copyable or even movable, like `std::atomic<...>`.
 				using _container_type = std::unique_ptr<T[]>;
 				using key_type = K;
-				using inner_key_type = typename key_type::key_type;
-				static_assert(std::is_integral_v<inner_key_type>);
-				using const_reference = const T&;
-				using reference = T&;
+				using value_type = T;
+				using const_reference = const value_type&;
+				using reference = value_type&;
+				using _inner_key_type = typename key_type::key_type;
+				static_assert(std::is_integral_v<_inner_key_type>);
 				explicit ephemeral_contiguous_key_map(std::size_t size) :
 					// Note that the elements will be value-initialized
 					_map(std::make_unique<T[]>(size)) {
@@ -60,10 +61,11 @@ namespace graph {
 			struct persistent_contiguous_key_map : reservable_base<K> {
 				using _container_type = std::vector<T>;
 				using key_type = K;
-				using inner_key_type = typename key_type::key_type;
-				static_assert(std::is_integral_v<inner_key_type>);
+				using value_type = T;
 				using const_reference = const T&;
 				using reference = typename _container_type::reference;
+				using _inner_key_type = typename key_type::key_type;
+				static_assert(std::is_integral_v<_inner_key_type>);
 				explicit persistent_contiguous_key_map(T default_ = {}) :
 					_default(std::move(default_)) {
 				}
