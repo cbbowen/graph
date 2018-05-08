@@ -99,33 +99,95 @@ SCENARIO("edge lists serialize and deserialize", "[Edge_list]") {
 			REQUIRE(g.order() == 0);
 			REQUIRE(g.size() == 0);
 		}
+		WHEN("deserializing string with ignored attributes") {
+			std::istringstream is(R"(digraph g { 1 [a=1]; 1 -> 1 [a="a"]; })");
+			is >> g.dot_format();
+			REQUIRE(g.order() == 1);
+			REQUIRE(g.size() == 1);
+		}
 		WHEN("deserializing string missing 'digraph'") {
 			std::istringstream is("g { }");
 			try {
 				is >> g.dot_format();
 				REQUIRE(false);
-			} catch (const std::runtime_error&) {}
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing graph name") {
+			std::istringstream is("digraph { }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
 		}
 		WHEN("deserializing string missing '{'") {
 			std::istringstream is("digraph g 1; { }");
 			try {
 				is >> g.dot_format();
 				REQUIRE(false);
-			} catch (const std::runtime_error&) {}
+			} catch (const graph::format_error&) {}
 		}
 		WHEN("deserializing string missing ';'") {
 			std::istringstream is("digraph g { 1 }");
 			try {
 				is >> g.dot_format();
 				REQUIRE(false);
-			} catch (const std::runtime_error&) {}
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing tail") {
+			std::istringstream is("digraph g { -> 1 }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing head") {
+			std::istringstream is("digraph g { 1 -> }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
 		}
 		WHEN("deserializing string missing '->'") {
 			std::istringstream is("digraph g { 1 1; }");
 			try {
 				is >> g.dot_format();
 				REQUIRE(false);
-			} catch (const std::runtime_error&) {}
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing ','") {
+			std::istringstream is("digraph g { 1 [a=1 b=2]; }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing ']'") {
+			std::istringstream is("digraph g { 1 [; }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
+		}
+		WHEN("deserializing string missing ']' with attribute") {
+			std::istringstream is("digraph g { 1 [a=1; }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
+		}
+		// WHEN("deserializing string missing start '\"'") {
+		// 	std::istringstream is("digraph g { 1 [a=1\"]; }");
+		// 	try {
+		// 		is >> g.dot_format();
+		// 		REQUIRE(false);
+		// 	} catch (const graph::format_error&) {}
+		// }
+		WHEN("deserializing string missing end '\"'") {
+			std::istringstream is("digraph g { 1 [a=\"1]; }");
+			try {
+				is >> g.dot_format();
+				REQUIRE(false);
+			} catch (const graph::format_error&) {}
 		}
 	}
 	GIVEN("a random graph") {
@@ -152,7 +214,7 @@ SCENARIO("edge lists serialize and deserialize", "[Edge_list]") {
 			REQUIRE(g.size() == N);
 		}
 	}
-	GIVEN("an graph with attributes") {
+	GIVEN("a graph with integer attributes") {
 		using namespace graph::attributes;
 		G g;
 		auto v = g.insert_vert();
@@ -167,25 +229,68 @@ SCENARIO("edge lists serialize and deserialize", "[Edge_list]") {
 				"v1"_of_vert = v1, "v2"_of_vert = v2,
 				"e1"_of_edge = e1, "e2"_of_edge = e2);
 		}
-		// WHEN("deserializing") {
-		// 	std::ostringstream os;
-		// 	os << g.dot_format(
-		// 		"v1"_of_vert = v1, "v2"_of_vert = v2,
-		// 		"e1"_of_edge = e1, "e2"_of_edge = e2);
-		// 	std::istringstream is(os.str());
-		// 	g.clear();
-		// 	auto _v1 = g.vert_map(0), _v2 = g.vert_map(0);
-		// 	auto _e1 = g.edge_map(0), _e2 = g.edge_map(0);
-		// 	is >> g.dot_format(
-		// 		"v1"_of_vert = _v1, "v2"_of_vert = _v2,
-		// 		"e1"_of_edge = _e1, "e2"_of_edge = _e2);
-		// 	REQUIRE(g.order() == 1);
-		// 	REQUIRE(g.size() == 1);
-		// 	for (auto v : g.verts())
-		// 		REQUIRE(_v1(v) == v1(v) && _v2(v) == v2(v));
-		// 	for (auto e : g.edges())
-		// 		REQUIRE(_e1(e) == e1(e) && _e2(e) == e2(e));
-		// }
+		WHEN("deserializing") {
+			std::ostringstream os;
+			os << g.dot_format(
+				"v1"_of_vert = v1, "v2"_of_vert = v2,
+				"e1"_of_edge = e1, "e2"_of_edge = e2);
+			std::istringstream is(os.str());
+			g.clear();
+			auto _v1 = g.vert_map(0), _v2 = g.vert_map(0);
+			auto _e1 = g.edge_map(0), _e2 = g.edge_map(0);
+			is >> g.dot_format(
+				"v1"_of_vert = _v1, "v2"_of_vert = _v2,
+				"e1"_of_edge = _e1, "e2"_of_edge = _e2);
+			REQUIRE(g.order() == 1);
+			REQUIRE(g.size() == 1);
+			for (auto v : g.verts()) {
+				REQUIRE(_v1(v) == v1(v));
+				REQUIRE(_v2(v) == v2(v));
+			}
+			for (auto e : g.edges()) {
+				REQUIRE(_e1(e) == e1(e));
+				REQUIRE(_e2(e) == e2(e));
+			}
+		}
+	}
+	GIVEN("a graph with string attributes") {
+		using namespace graph::attributes;
+		G g;
+		auto v = g.insert_vert();
+		g.insert_edge(v, v);
+		auto v1 = [](auto v) { return R"(")"; };
+		auto v2 = [](auto v) { return R"(\)"; };
+		auto e1 = [](auto v) { return R"(")"; };
+		auto e2 = [](auto v) { return R"(\)"; };
+		WHEN("serializing") {
+			std::ostringstream os;
+			os << g.dot_format(
+				"v1"_of_vert = v1, "v2"_of_vert = v2,
+				"e1"_of_edge = e1, "e2"_of_edge = e2);
+		}
+		WHEN("deserializing") {
+			std::ostringstream os;
+			os << g.dot_format(
+				"v1"_of_vert = v1, "v2"_of_vert = v2,
+				"e1"_of_edge = e1, "e2"_of_edge = e2);
+			std::istringstream is(os.str());
+			g.clear();
+			auto _v1 = g.vert_map<std::string>(), _v2 = g.vert_map<std::string>();
+			auto _e1 = g.edge_map<std::string>(), _e2 = g.edge_map<std::string>();
+			is >> g.dot_format(
+				"v1"_of_vert = _v1, "v2"_of_vert = _v2,
+				"e1"_of_edge = _e1, "e2"_of_edge = _e2);
+			REQUIRE(g.order() == 1);
+			REQUIRE(g.size() == 1);
+			for (auto v : g.verts()) {
+				REQUIRE(_v1(v) == v1(v));
+				REQUIRE(_v2(v) == v2(v));
+			}
+			for (auto e : g.edges()) {
+				REQUIRE(_e1(e) == e1(e));
+				REQUIRE(_e2(e) == e2(e));
+			}
+		}
 	}
 }
 

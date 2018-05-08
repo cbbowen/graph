@@ -66,7 +66,7 @@ namespace graph {
 					skip_whitepsace(is);
 					std::basic_string<Char, Char_traits> result;
 					bool quoted = false, symbol = false;
-					read_loop(is, [&, start=true, escaped=false](char c) mutable {
+					bool terminated = read_loop(is, [&, start=true, escaped=false](char c) mutable {
 						// Check if this could start a symbol
 						bool is_symbol_start = _base_type::is_symbol_start_char(c);
 						if (start) {
@@ -106,14 +106,9 @@ namespace graph {
 						result.push_back(c);
 						return true;
 					});
-					// Remove whitespace from the end unless it was quoted in which case, we need to remove the end quote from the stream
-					if (quoted) {
-						if (is.get() != '"')
-							throw std::runtime_error("expected '\"'");
-					} else {
-						while (!result.empty() && std::isspace(result.back()))
-							result.pop_back();
-					}
+					// Remove the end quote from the stream
+					if (quoted && (!terminated || is.get() != '"'))
+						throw format_error({"'\"'"}, "end-of-file");
 					return std::make_pair(symbol, result);
 				}
 				template <class Char, class Char_traits>
@@ -148,8 +143,7 @@ namespace graph {
 				template <class Tag, class K, class Char, class Char_traits, std::size_t... I>
 				bool read_attributes(const K& k, const std::basic_string<Char, Char_traits>& name, const std::basic_string<Char, Char_traits>& value, std::index_sequence<I...>) const {
 					bool any = false;
-					((any = read_attribute<Tag>(k, name, value, std::get<I>(this->args))) ||... || false);
-					return any;
+					return ((any = read_attribute<Tag>(k, name, value, std::get<I>(this->args))) || ... || false);
 				}
 				template <class Tag, class K, class Char, class Char_traits>
 				bool read_attributes(const K& k, const std::basic_string<Char, Char_traits>& name, const std::basic_string<Char, Char_traits>& value) const {
@@ -164,7 +158,7 @@ namespace graph {
 					//self._g.get().clear();
 					std::map<std::string, typename Verts::value_type> vm;
 					if (auto type = read_type(is); type != "digraph")
-						throw format_error({"'diagraph'"}, type);
+						throw format_error({"'digraph'"}, type);
 					std::string name = read_identifier(is);
 					read_symbol(is, {"'{'"});
 					auto get_vertex = [&](const std::string& name) {
@@ -223,6 +217,7 @@ namespace graph {
 				static decltype(auto) write_attribute_part(std::basic_ostream<Char, Char_traits>& os, const T& part) {
 					//return os << part;
 					auto ss = std::basic_ostringstream<Char, Char_traits>();
+					ss << part;
 					auto s = std::move(ss.str());
 					if (s.empty() || s[0] == '"' || std::find_if(s.begin(), s.end(), [](char c) { return std::isspace(c) || is_symbol_start_char(c); }) != s.end()) {
 						using string_t = std::basic_string<Char, Char_traits>;
@@ -253,7 +248,7 @@ namespace graph {
 						bool any = false;
 						((any = write_attribute<Tag>(os, k, std::get<I>(args), any)() || any), ...);
 						if (any)
-							os << " ]";
+							os << "]";
 					}
 				}
 				template <class Tag, class Char, class Char_traits, class K>
