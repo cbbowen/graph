@@ -15,10 +15,10 @@ namespace graph {
 			struct map_iterator_wrapper {
 				using key_type = std::decay_t<std::tuple_element_t<0,
 					typename std::iterator_traits<It>::value_type>>;
-				explicit constexpr map_iterator_wrapper(It it) :
+				explicit map_iterator_wrapper(It it) :
 					_it(std::move(it)) {
 				}
-				constexpr map_iterator_wrapper() : _it{} {}
+				map_iterator_wrapper() = default;
 				// These don't use the key because it can be implemented more efficiently
 				bool operator==(const map_iterator_wrapper& other) const {
 					return _it == other._it;

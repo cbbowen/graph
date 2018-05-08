@@ -28,12 +28,7 @@ namespace graph {
 						ranges::view::transform(construct<Edge>);
 				}
 				auto null_edge() const noexcept {
-					// Microsoft's STL implementation doesn't correctly support comparison of value-initialized iterators (per n4659 27.2.5.2)
-#ifdef _MSVC_STL_VERSION
-					return Edge{ _elist.end() };
-#else
-					return Edge{};
-#endif
+					return Edge{_elist.end()};
 				}
 				auto size() const noexcept {
 					return _elist.size();
