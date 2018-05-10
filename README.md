@@ -6,6 +6,9 @@
 Graphs are ubiquitous, so they should be easy to use, from construction to queries, and algorithms to serialization.  Consider the following snippet demonstrating each of these features.
 
 ```cpp
+#include <graph/Out_adjacency_list.hpp>
+using namespace graph;
+
 // Build a random graph
 std::mt19937_64 random;
 Out_adjacency_list g;
@@ -25,6 +28,7 @@ for (auto e : g.edges())
 auto [tree, distance] = g.shortest_paths_from(g.random_vert(random), weight);
 
 // Output result in dot format
+using namespace graph::attributes; // for `_of_vert`
 std::cout << tree.dot_format("distance"_of_vert = distance) << std::endl;
 ```
 
