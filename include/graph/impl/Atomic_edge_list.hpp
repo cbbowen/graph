@@ -66,8 +66,10 @@ namespace graph {
 					}
 					return Edge(ek);
 				}
+				using _emap_tracked_type = reservable_base<Edge>;
+				using _emap_tracker_type = tracker<_emap_tracked_type, lock_insert_erase_set<_emap_tracked_type *>>;
 				template <class T>
-				using Edge_map = tracked<persistent_contiguous_key_map<Edge, T>, reservable_base<Edge>>;
+				using Edge_map = tracked<persistent_contiguous_key_map<Edge, T>, _emap_tracker_type>;
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(_emap_tracker, _elist.size(), std::move(default_));
@@ -90,7 +92,7 @@ namespace graph {
 			private:
 				std::vector<std::pair<Vert, Vert>> _elist;
 				std::atomic<Size> _elast = 0;
-				tracker<reservable_base<Edge>> _emap_tracker;
+				_emap_tracker_type _emap_tracker;
 			};
 		}
 	}

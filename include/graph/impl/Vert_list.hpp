@@ -42,8 +42,9 @@ namespace graph {
 					_vlist.clear();
 					_vlast = 0;
 				}
+				using _vmap_tracker_type = tracker<erasable_base<Vert>>;
 				template <class T>
-				using Vert_map = tracked<persistent_map_iterator_map<Vert, T>, erasable_base<Vert>>;
+				using Vert_map = tracked<persistent_map_iterator_map<Vert, T>, _vmap_tracker_type>;
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(_vmap_tracker, std::move(default_));
@@ -55,7 +56,7 @@ namespace graph {
 					return Ephemeral_vert_map<T>(std::move(default_));
 				}
 
-				using Vert_set = tracked<erasable_unordered_set<Vert>, erasable_base<Vert>>;
+				using Vert_set = tracked<erasable_unordered_set<Vert>, _vmap_tracker_type>;
 				auto vert_set() const {
 					return Vert_set(_vmap_tracker);
 				}
@@ -66,7 +67,7 @@ namespace graph {
 			private:
 				_vlist_type _vlist;
 				Order _vlast = 0;
-				tracker<erasable_base<Vert>> _vmap_tracker;
+				_vmap_tracker_type _vmap_tracker;
 			};
 		}
 	}

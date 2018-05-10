@@ -63,8 +63,9 @@ namespace graph {
 					_elast = 0;
 					_base_type::clear();
 				}
+				using _emap_tracker_type = tracker<erasable_base<Edge>>;
 				template <class T>
-				using Edge_map = tracked<persistent_map_iterator_map<Edge, T>, erasable_base<Edge>>;
+				using Edge_map = tracked<persistent_map_iterator_map<Edge, T>, _emap_tracker_type>;
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(_emap_tracker, std::move(default_));
@@ -75,7 +76,7 @@ namespace graph {
 				auto ephemeral_edge_map(T default_) const {
 					return Ephemeral_edge_map<T>(std::move(default_));
 				}
-				using Edge_set = tracked<erasable_unordered_set<Edge>, erasable_base<Edge>>;
+				using Edge_set = tracked<erasable_unordered_set<Edge>, _emap_tracker_type>;
 				auto edge_set() const {
 					return Edge_set(_emap_tracker);
 				}
@@ -86,7 +87,7 @@ namespace graph {
 			private:
 				_elist_type _elist;
 				Size _elast = 0;
-				tracker<erasable_base<Edge>> _emap_tracker;
+				_emap_tracker_type _emap_tracker;
 			};
 		}
 	}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <mutex>
 
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
@@ -15,6 +16,20 @@
 namespace graph {
 	inline namespace v1 {
 		namespace impl {
+			// This is only intended to be used with trackers, so the only locked operations are `insert` and `erase`, even iterations is not thread-safe.  Do not treat this as a general thread-safe container.
+			template <class T>
+			struct lock_insert_erase_set : std::unordered_set<T> {
+				using _base_type = std::unordered_set<T>;
+				void insert(T value) {
+					std::lock_guard lock(_mutex);
+					_base_type::insert(std::move(value));
+				}
+				void erase(const T& value) {
+					std::lock_guard lock(_mutex);
+					_base_type::erase(value);
+				}
+				std::mutex _mutex;
+			};
 			// Guarantees: All const methods and `atomic_*` are atomic unless otherwise noted.
 			template <class Order_ = std::size_t>
 			struct Atomic_vert_list {
@@ -53,8 +68,10 @@ namespace graph {
 					}
 					return Vert{vk};
 				}
+				using _vmap_tracked_type = reservable_base<Vert>;
+				using _vmap_tracker_type = tracker<_vmap_tracked_type, lock_insert_erase_set<_vmap_tracked_type *>>;
 				template <class T>
-				using Vert_map = tracked<persistent_contiguous_key_map<Vert, T>, reservable_base<Vert>>;
+				using Vert_map = tracked<persistent_contiguous_key_map<Vert, T>, _vmap_tracker_type>;
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(_vmap_tracker, _vcapacity, std::move(default_));
@@ -79,7 +96,7 @@ namespace graph {
 			private:
 				std::atomic<Order> _vlast = 0;
 				Order _vcapacity = 0;
-				tracker<reservable_base<Vert>> _vmap_tracker;
+				_vmap_tracker_type _vmap_tracker;
 			};
 		}
 	}

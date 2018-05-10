@@ -137,8 +137,10 @@ namespace graph {
 					_esize = _elast = 0;
 				}
 
+				using _vmap_tracker_type = tracker<erasable_base<Vert>>;
+
 				template <class T>
-				using Vert_map = tracked<persistent_map_iterator_map<Vert, T>, erasable_base<Vert>>;
+				using Vert_map = tracked<persistent_map_iterator_map<Vert, T>, _vmap_tracker_type>;
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(_vmap_tracker, std::move(default_));
@@ -151,7 +153,7 @@ namespace graph {
 					return Ephemeral_vert_map<T>(std::move(default_));
 				}
 
-				using Vert_set = tracked<erasable_unordered_set<Vert>, erasable_base<Vert>>;
+				using Vert_set = tracked<erasable_unordered_set<Vert>, _vmap_tracker_type>;
 				auto vert_set() const {
 					return Vert_set(_vmap_tracker);
 				}
@@ -159,6 +161,8 @@ namespace graph {
 				auto ephemeral_vert_set() const {
 					return Ephemeral_vert_set();
 				}
+
+				using _emap_tracker_type = tracker<erasable_base<Edge>>;
 
 				template <class T>
 				struct _Persistent_edge_map : erasable_base<Edge> {
@@ -190,7 +194,7 @@ namespace graph {
 					persistent_map_iterator_map<_edge_type, T> _map;
 				};
 				template <class T>
-				using Edge_map = tracked<_Persistent_edge_map<T>, erasable_base<Edge>>;
+				using Edge_map = tracked<_Persistent_edge_map<T>, _emap_tracker_type>;
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(_emap_tracker, std::move(default_));
@@ -227,7 +231,7 @@ namespace graph {
 				// relies on `std::pair::operator==` only checking `std::pair::second` for equality if `std::pair::first` matches; otherwise behavior is undefined because iterators from different containers are incomparable.  Fortunately, the standard indicates this is the required behavior.
 				using Edge_set = tracked<
 					erasable_unordered_set<Edge, ordered_pair_hasher<Edge>>,
-					erasable_base<Edge>>;
+					_emap_tracker_type>;
 				auto edge_set() const {
 					return Edge_set(_emap_tracker);
 				}
@@ -239,8 +243,8 @@ namespace graph {
 				GRAPH_V1_ADJACENCY_LIST_VLIST_MUTABLE _vlist_type _vlist;
 				Order _vlast = 0;
 				Size _esize = 0, _elast = 0;
-				tracker<erasable_base<Vert>> _vmap_tracker;
-				tracker<erasable_base<Edge>> _emap_tracker;
+				_vmap_tracker_type _vmap_tracker;
+				_emap_tracker_type _emap_tracker;
 			};
 
 			template <template <class, class, class...> class Map_ = std::map>
