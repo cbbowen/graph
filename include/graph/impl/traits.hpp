@@ -70,6 +70,35 @@ namespace graph {
 			template <class G> constexpr bool has_verts = has_trait<Verts, G>;
 
 			template <class G>
+			struct Verts<G *, std::enable_if_t<has_verts<G>>> : Verts<G> {
+				using Ptr = G *;
+				using Base = Verts<G>;
+				static decltype(auto) range(Ptr ptr) {
+					return Base::range(*ptr);
+				}
+				static decltype(auto) size(Ptr ptr) {
+					return Base::size(*ptr);
+				}
+				static decltype(auto) null(Ptr ptr) {
+					return Base::null(*ptr);
+				}
+				static decltype(auto) set(Ptr ptr) {
+					return Base::set(*ptr);
+				}
+				static decltype(auto) ephemeral_set(Ptr ptr) {
+					return Base::ephemeral_set(*ptr);
+				}
+				template <class T>
+				static decltype(auto) map(Ptr ptr, T default_) {
+					return Base::map(*ptr, std::move(default_));
+				} // LCOV_EXCL_LINE (unreachable)
+				template <class T>
+				static decltype(auto) ephemeral_map(Ptr ptr, T default_) {
+					return Base::ephemeral_map(*ptr, std::move(default_));
+				}
+			};
+
+			template <class G>
 			struct Verts<std::reference_wrapper<G>, std::enable_if_t<has_verts<G>>> : Verts<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Verts<G>;
@@ -152,6 +181,43 @@ namespace graph {
 			template <class G> constexpr bool has_edges = has_trait<Edges, G>;
 
 			template <class G>
+			struct Edges<G *, std::enable_if_t<has_edges<G>>> : Edges<G> {
+				using Ptr = G *;
+				using Base = Edges<G>;
+				static decltype(auto) range(Ptr ptr) {
+					return Base::range(*ptr);
+				}
+				static decltype(auto) size(Ptr ptr) {
+					return Base::size(*ptr);
+				}
+				static decltype(auto) null(Ptr ptr) {
+					return Base::null(*ptr);
+				}
+				template <class E>
+				static decltype(auto) tail(Ptr ptr, E&& e) {
+					return Base::tail(*ptr, std::forward<E>(e));
+				}
+				template <class E>
+				static decltype(auto) head(Ptr ptr, E&& e) {
+					return Base::head(*ptr, std::forward<E>(e));
+				}
+				static decltype(auto) set(Ptr ptr) {
+					return Base::set(*ptr);
+				}
+				static decltype(auto) ephemeral_set(Ptr ptr) {
+					return Base::ephemeral_set(*ptr);
+				}
+				template <class T>
+				static decltype(auto) map(Ptr ptr, T default_) {
+					return Base::map(*ptr, std::move(default_));
+				} // LCOV_EXCL_LINE (unreachable)
+				template <class T>
+				static decltype(auto) ephemeral_map(Ptr ptr, T default_) {
+					return Base::ephemeral_map(*ptr, std::move(default_));
+				}
+			};
+
+			template <class G>
 			struct Edges<std::reference_wrapper<G>, std::enable_if_t<has_edges<G>>> : Edges<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Edges<G>;
@@ -213,6 +279,20 @@ namespace graph {
 			template <class G> constexpr bool has_out_edges = has_trait<Out_edges, G>;
 
 			template <class G>
+			struct Out_edges<G *, std::enable_if_t<has_out_edges<G>>> : Out_edges<G> {
+				using Ptr = G *;
+				using Base = Out_edges<G>;
+				static decltype(auto) range(Ptr ptr,
+					const typename Base::key_type& v) {
+					return Base::range(*ptr, v);
+				}
+				static decltype(auto) size(Ptr ptr,
+					const typename Base::key_type& v) {
+					return Base::size(*ptr, v);
+				}
+			};
+
+			template <class G>
 			struct Out_edges<std::reference_wrapper<G>, std::enable_if_t<has_out_edges<G>>> : Out_edges<G> {
 				using Ref = std::reference_wrapper<G>;
 				using Base = Out_edges<G>;
@@ -249,6 +329,20 @@ namespace graph {
 			};
 
 			template <class G> constexpr bool has_in_edges = has_trait<In_edges, G>;
+
+			template <class G>
+			struct In_edges<G *, std::enable_if_t<has_in_edges<G>>> : In_edges<G> {
+				using Ptr = G *;
+				using Base = In_edges<G>;
+				static decltype(auto) range(Ptr ptr,
+					const typename Base::key_type& v) {
+					return Base::range(*ptr, v);
+				}
+				static decltype(auto) size(Ptr ptr,
+					const typename Base::key_type& v) {
+					return Base::size(*ptr, v);
+				}
+			};
 
 			template <class G>
 			struct In_edges<std::reference_wrapper<G>, std::enable_if_t<has_in_edges<G>>> : In_edges<G> {

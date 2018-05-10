@@ -7,6 +7,7 @@ namespace graph {
 		namespace impl {
 			template <class Impl>
 			struct Reverse {
+				Reverse() = default;
 				Reverse(const Reverse&) = default;
 				Reverse(Reverse&&) = default;
 				explicit Reverse(Impl&& impl) :

@@ -57,6 +57,8 @@ namespace graph {
 					return _impl();
 				}
 			};
+
+			struct virtual_base_called {};
 		}
 
 		/* Generic graph interface.
@@ -75,6 +77,7 @@ namespace graph {
 			using Edges = impl::traits::Edges<Impl>;
 		public:
 			using _base_type::_base_type;
+			virtual ~Graph() = default;
 
 			/* cldoc:begin-category(Vertices) */
 
@@ -445,6 +448,8 @@ namespace graph {
 			public virtual Graph<Impl> {
 			using _base_type = Graph<Impl>;
 			using Out_edges = impl::traits::Out_edges<Impl>;
+		protected:
+			Out_edge_graph(impl::virtual_base_called) {}
 		public:
 			using _base_type::_base_type;
 
@@ -476,6 +481,8 @@ namespace graph {
 			public virtual Graph<Impl> {
 			using _base_type = Graph<Impl>;
 			using In_edges = impl::traits::In_edges<Impl>;
+		protected:
+			In_edge_graph(impl::virtual_base_called) {}
 		public:
 			using _base_type::_base_type;
 
@@ -507,6 +514,8 @@ namespace graph {
 			public Out_edge_graph<Impl>,
 			public In_edge_graph<Impl> {
 			using _base_type = Graph<Impl>;
+			using _out_edge_base_type = Out_edge_graph<Impl>;
+			using _in_edge_base_type = In_edge_graph<Impl>;
 		public:
 			using Vert = typename _base_type::Vert;
 			using Edge = typename _base_type::Edge;
@@ -516,8 +525,8 @@ namespace graph {
 				class = std::enable_if_t<std::is_constructible_v<_base_type, Args&&...>>>
 			Bi_edge_graph(Args&&... args) :
 				_base_type(std::forward<Args>(args)...),
-				Out_edge_graph<Impl>(_base_type::_impl()),
-				In_edge_graph<Impl>(_base_type::_impl()) {
+				_out_edge_base_type(impl::virtual_base_called{}),
+				_in_edge_base_type(impl::virtual_base_called{}) {
 			}
 
 			template <class WM, class Compare = std::less<>, class Combine = std::plus<>>
