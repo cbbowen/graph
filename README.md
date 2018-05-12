@@ -32,9 +32,11 @@ using namespace graph::attributes; // for `_of_vert`
 std::cout << tree.dot_format("distance"_of_vert = distance) << std::endl;
 ```
 
+For a detailed walkthrough of this example, see the [tutorial](doc/Tutorial.md).
+
 For more examples, take a look in the `example` directory.  To compile and run any example file `NAME.cpp`, simply `make NAME` in that directory.  If you're already familiar with the extensive Boost.Graph library, `example/bgl.cpp` should provide a nice transition.
 
-The overview is a good place to dive into the [documentation](doc/Overview.md).
+For more even more detail, see the [documentation overview](doc/Overview.md).
 
 # Efficient
 
@@ -44,7 +46,7 @@ This library firmly embraces the philosophy that you only pay for what you use. 
 
 By using a trait-driven implementation, everything is kept header-only and generic.  If your use case requires a specialized data structure, you need only implement the appropriate traits and all the algorithms implemented immediately become available.
 
-This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.  The [documentation](doc/Overview.md) includes a tables of concepts and the data structures that implement them.
+This doesn't mean you should usually need to do so, of course.  This library provides multiple data structures out of the box and more are on the way.  The [documentation overview](doc/Overview.md) includes a tables of concepts and the data structures that implement them.
 
 To declare a function accepting a generic `Graph` all you need to write is:
 
