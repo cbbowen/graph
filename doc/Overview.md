@@ -1,5 +1,5 @@
 
-# Graph Concepts
+# Graph concepts
 
 Follow the hyperlinked names below for documentation on the individual concepts.
 
