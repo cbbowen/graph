@@ -60,4 +60,25 @@ To round out our `main` function, we'll output the tree of shortest paths (which
 }
 ```
 
+Compiling and running this program outputs:
+```graphviz
+digraph g {
+        0 [distance=0];
+        1 [distance=4.55577];
+        2 [distance=1.1982];
+        3 [distance=1.09407];
+        4 [distance=3.00337];
+        5 [distance=2.7191];
+        6 [distance=1.68912];
+        7 [distance=3.92047];
+        5 -> 1;
+        0 -> 2;
+        0 -> 3;
+        2 -> 4;
+        3 -> 5;
+        0 -> 6;
+        5 -> 7;
+}
+```
+
 Now that you understand the basic usage, I recommend you head on over to the [documentation overview](Overview.md).
