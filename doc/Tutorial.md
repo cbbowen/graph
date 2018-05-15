@@ -82,3 +82,9 @@ digraph g {
 ```
 
 Now that you understand the basic usage, I recommend you head on over to the [documentation overview](Overview.md).
+
+Other things you can try with the help of the documentation:
+* Include edge weights in the output (using `_of_edge`).
+* Generate [Erdős–Rényi graphs](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model) instead.
+* Read the graph from a file (`g.dot_format(...)` supports deserialization, too).
+* Compute and output the minimum spanning tree (using [`minimum_tree_reachable_from`](Out_edge_graph.md))
