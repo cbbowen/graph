@@ -162,7 +162,8 @@ struct Graph_tester {
 		return v;
 	}
 	auto insert_vert() {
-		return test_insert_vert(&G::insert_vert);
+		auto inserter = [](G& g){ return g.insert_vert(); };
+		return test_insert_vert(inserter);
 	}
 	template <class Edge_inserter>
 	auto test_insert_edge(Edge_inserter edge_inserter, V s, V t) {
@@ -184,7 +185,8 @@ struct Graph_tester {
 		return e;
 	}
 	auto insert_edge(V s, V t) {
-		return test_insert_edge(&G::insert_edge, std::move(s), std::move(t));
+		auto inserter = [](G& g, V&& s, V&& t){ return g.insert_edge(std::move(s), std::move(t)); };
+		return test_insert_edge(inserter, std::move(s), std::move(t));
 	}
 	void erase_vert(const V& v) {
 		auto m = g.order();
