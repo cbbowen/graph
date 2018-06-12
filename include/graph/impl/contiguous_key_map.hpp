@@ -13,7 +13,7 @@ namespace graph {
 		namespace impl {
 			template <class K, class T>
 			struct ephemeral_contiguous_key_map {
-				// One might reasonably wonder why we don't just use `std::vector<T>` here.  The reason is to make this usable with types that aren't copyable or even movable, like `std::atomic<...>`.
+				// One might reasonably wonder why we don't just use `std::vector<T>` here.  The reason is to make this usable with types that aren't copyable or even movable, like `std::atomic<...>`.  Of course, the user could make a wrapper around `std::atomic<...>` that is movable, but if we can make it unnecessary in this case, why not do so?
 				using _container_type = std::unique_ptr<T[]>;
 				using key_type = K;
 				using value_type = T;
@@ -22,7 +22,7 @@ namespace graph {
 				using _inner_key_type = typename key_type::key_type;
 				static_assert(std::is_integral_v<_inner_key_type>);
 				explicit ephemeral_contiguous_key_map(std::size_t size) :
-					// Note that the elements will be value-initialized
+					// Note that the elements will be value-initialized, which is the correct behavior with no default is specified
 					_map(std::make_unique<T[]>(size)) {
 				}
 				ephemeral_contiguous_key_map(std::size_t size, T default_) :
@@ -130,8 +130,8 @@ namespace graph {
 				}
 				// TODO: `erase`, `clear`, `begin`, and `end` are experimental
 				bool erase(const key_type& k) const {
-					// TODO: This implementation is O(n)
 					if (_flags.exchange(k, flag_type{})) {
+						// TODO: This implementation is O(n)
 						_container.erase(std::find(_container.begin(), _container.end(), k));
 						return true;
 					}
