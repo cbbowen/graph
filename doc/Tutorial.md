@@ -1,7 +1,7 @@
 
 # Tutorial
 
-We'll be walking through a short example that builds a random graph, run Dijkstra's single-source shortest path algorithm, and outputs the results.
+We'll be walking through a short example that builds a random graph, runs Dijkstra's single-source shortest path algorithm, and outputs the results.
 
 To start, we need to include the graph data structure we'll be using, an `Out_adjacency_list`.  And everything in this library resides in the `graph` namespace, so for brevity we'll just pull that into the global namespace.
 
