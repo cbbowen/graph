@@ -3,7 +3,7 @@
 
 We'll be walking through a short example that builds a random graph, runs Dijkstra's single-source shortest path algorithm, and outputs the results.
 
-To start, we need to include the graph data structure we'll be using, an `Out_adjacency_list`.  And everything in this library resides in the `graph` namespace, so for brevity we'll just pull that into the global namespace.
+To start, we need to include the graph data structure we'll be using, an [`Out_adjacency_list`](Out_adjacency_list.md).  And everything in this library resides in the `graph` namespace, so for brevity we'll just pull that into the global namespace.
 
 ```cpp
 #include <graph/Out_adjacency_list.hpp>
@@ -34,7 +34,7 @@ To make our graph useful, it needs some edges.  So let's add edges using the `in
 	}
 ```
 
-Dijkstra's algorithm supports edge weights, so let's assign random weights to each edge.  Any function from edges to weights will work, and edges are always valid keys for `std::map` or `std::unordered_map`.  However, every graph knows how to make an efficient map from its edges to another type.  In the case of `Stable_adjacency_list`, this is effectively an `std::vector`.  We construct a new map using the `edge_map()` method.
+Dijkstra's algorithm supports edge weights, so let's assign random weights to each edge.  Any function from edges to weights will work, and edges are always valid keys for `std::map` or `std::unordered_map`.  However, every [`Graph`](Graph.md) knows how to represent an efficient map from its edges to another type.  We construct a new map using the `edge_map()` method.
 
 ```cpp
 	auto weight = g.edge_map<double>();
@@ -42,13 +42,13 @@ Dijkstra's algorithm supports edge weights, so let's assign random weights to ea
 
 And assign random weights to each edge using `operator[]` provided by the map.
 
-```
+```cpp
 	for (auto e : g.edges())
 		weight[e] = std::uniform_real_distribution(1.0, 2.0)(random);
 ```
 Running Dijkstra's algorithm is now as simple as calling the `shortest_paths_from()` method, which returns a tree of shortest paths and a map from vertices to distances from the source.
 
-```
+```cpp
 	auto [tree, distance] = g.shortest_paths_from(g.random_vert(random), weight);
 ```
 
