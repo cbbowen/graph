@@ -1,5 +1,5 @@
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include <graph/Graph.hpp>
 
