@@ -43,7 +43,7 @@ namespace graph {
 				auto tree = in_subtree(s);
 				for (auto e_prime : edges()) {
 					auto v = tail(e_prime), t = head(e_prime);
-					if (t == s)
+					if (t == s || !compare(ds_(t), inf))
 						continue;
 					auto d_prime = combine(ds_(v), weight(e_prime));
 					auto e = tree.in_edge_or_null(t);
