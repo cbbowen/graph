@@ -10,6 +10,7 @@ example/*
 !example/Makefile
 !example/*.cpp
 !example/*.hpp
+build/*
 
 # Ignore backups
 *.bak

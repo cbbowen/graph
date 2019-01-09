@@ -1,5 +1,4 @@
-
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include <graph/Stable_edge_list.hpp>
 
