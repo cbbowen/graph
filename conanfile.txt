@@ -1,0 +1,9 @@
+[requires]
+range-v3/0.4.0@ericniebler/stable
+
+[build_requires]
+Catch2/2.5.0@catchorg/stable
+
+[generators]
+cmake
+
