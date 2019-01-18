@@ -4,6 +4,7 @@ project/*.vcxproj.user
 
 # Ignore build directory for tests
 test/build
+build/
 
 # Ignore built examples
 example/*
