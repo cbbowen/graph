@@ -1,0 +1,17 @@
+language: cpp
+
+os: linux
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-8
+
+env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && GCOV=gcov-8"
+before_install: eval "${MATRIX_EVAL}"
+
+before_script: cd test
+script: make run CONFIG=gcov
+
+after_success: bash <(curl -s https://codecov.io/bash)

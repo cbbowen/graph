@@ -46,7 +46,7 @@ LIBS =
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O2 -DNDEBUG -DGRAPH_BENCHMARK
 PROFILEFLAGS = -g $(RELEASEFLAGS) -DGRAPH_BENCHMARK
-GCOVFLAGS = -g -O0 -fprofile-arcs -ftest-coverage --coverage # For gcov
+GCOVFLAGS = -g -fprofile-arcs -ftest-coverage --coverage -O0 -fno-inline -fno-inline-small-functions -fno-default-inline # For gcov
 LLVMCOVFLAGS = -fprofile-instr-generate -fcoverage-mapping # For llvm-cov
 
 ###########
@@ -94,6 +94,8 @@ else ifeq ($(CONFIG),profile)
 	CONFIGFLAGS = $(PROFILEFLAGS)
 else ifeq ($(CONFIG),gcov)
 	CONFIGFLAGS = $(GCOVFLAGS)
+else ifeq ($(CONFIG),lcov)
+	CONFIGFLAGS = $(GCOVFLAGS)
 else ifeq ($(CONFIG),llvm-cov)
 	CONFIGFLAGS = $(LLVMCOVFLAGS)
 endif
@@ -130,6 +132,7 @@ LINK = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS)
 DEBUGGER = gdb -ex run -ex quit --quiet --return-child-result
 PROFILER = valgrind --tool=callgrind --callgrind-out-file=$(PROFILEOUTPUT)
 PROFILE_ANALYZER = callgrind_annotate $(PROFILEANALYZEFLAGS)
+GCOV ?= gcov
 
 ##############
 ## INTERNAL ##
@@ -169,8 +172,14 @@ else ifeq ($(CONFIG),profile)
 	$(PROFILE_ANALYZER) $(PROFILEOUTPUT)
 else ifeq ($(CONFIG),gcov)
 	$(RM) $(OBJDIR)/*.gcda
+	$(RM) *.gcov
 	$(OUTPUT)
-	lcov --base-directory $(shell pwd) --directory $(OBJDIR) --gcov-tool ./llvm-gcov.sh --capture --output-file $(BUILDDIR)/unfiltered.info
+	$(GCOV) --object-directory $(OBJDIR) --relative-only --source-prefix .. --preserve-paths $(SOURCES)
+	$(RM) extern\#*.gcov
+else ifeq ($(CONFIG),lcov)
+	$(RM) $(OBJDIR)/*.gcda
+	$(OUTPUT)
+	lcov --base-directory $(shell pwd) --directory $(OBJDIR) --gcov-tool $(GCOV) --capture --output-file $(BUILDDIR)/unfiltered.info
 	lcov --extract $(BUILDDIR)/unfiltered.info $(shell readlink -f ../include)/\* -o $(BUILDDIR)/coverage.info
 	genhtml $(BUILDDIR)/coverage.info -o $(BUILDDIR)
 else ifeq ($(CONFIG),llvm-cov)
