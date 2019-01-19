@@ -38,7 +38,7 @@ namespace graph {
 					template <class T>
 					static decltype(auto) map(const R& r, T default_) {
 						return _base_type::map(r._impl, std::move(default_));
-					} // LCOV_EXCL_LINE (unreachable)
+					}
 					template <class T>
 					static decltype(auto) ephemeral_map(const R& r, T default_) {
 						return _base_type::ephemeral_map(r._impl, std::move(default_));
@@ -73,7 +73,7 @@ namespace graph {
 					template <class T>
 					static decltype(auto) map(const R& r, T default_) {
 						return _base_type::map(r._impl, std::move(default_));
-					} // LCOV_EXCL_LINE (unreachable)
+					}
 					template <class T>
 					static decltype(auto) ephemeral_map(const R& r, T default_) {
 						return _base_type::ephemeral_map(r._impl, std::move(default_));

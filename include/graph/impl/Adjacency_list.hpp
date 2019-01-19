@@ -101,7 +101,7 @@ namespace graph {
 				}
 				auto insert_vert() {
 					return Vert{_vlist.emplace_hint(_vlist.end(), _vlast++, _elist_type{})};
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				// precondition: `v` must be unreachable from other vertices
 				void erase_vert(const Vert& v) {
 #if GRAPH_CHECK_PRECONDITIONS

@@ -79,7 +79,7 @@ namespace graph {
 					// Would this also be correct?
 					// _size.fetch_add(1, std::memory_order_release);
 					return node->_value;
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				const_iterator begin() const {
 					return iterator{_head.load(std::memory_order_relaxed)};
 				}

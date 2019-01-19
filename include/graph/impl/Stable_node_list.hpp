@@ -108,7 +108,7 @@ namespace graph {
 				template <class T>
 				auto vert_map(T default_) const {
 					return Vert_map<T>(std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 
 				template <class T>
 				using Ephemeral_vert_map = Vert_map<T>;
@@ -131,7 +131,7 @@ namespace graph {
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 
 				template <class T>
 				using Ephemeral_edge_map = Edge_map<T>;

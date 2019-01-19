@@ -36,7 +36,7 @@ namespace graph {
 						a = b;
 				check_precondition(size > 0, "size must be positive");
 				return a;
-			} // LCOV_EXCL_LINE (unreachable)
+			}
 		}
 		template <class Impl>
 		template <class Random>

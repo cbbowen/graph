@@ -41,7 +41,7 @@ namespace graph {
 				template <class T>
 				auto edge_map(T default_) const {
 					return Edge_map<T>(size(), std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				using Ephemeral_edge_map = ephemeral_contiguous_key_map<Edge, T>;
 				template <class T>

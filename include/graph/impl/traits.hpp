@@ -58,7 +58,7 @@ namespace graph {
 				template <class T>
 				static map_type<T> map(const G& g, T default_) {
 					return g.vert_map(std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				using ephemeral_map_type = typename G::template Ephemeral_vert_map<T>;
 				template <class T>
@@ -91,7 +91,7 @@ namespace graph {
 				template <class T>
 				static decltype(auto) map(Ptr ptr, T default_) {
 					return Base::map(*ptr, std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				static decltype(auto) ephemeral_map(Ptr ptr, T default_) {
 					return Base::ephemeral_map(*ptr, std::move(default_));
@@ -120,7 +120,7 @@ namespace graph {
 				template <class T>
 				static decltype(auto) map(Ref ref, T default_) {
 					return Base::map(ref.get(), std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				static decltype(auto) ephemeral_map(Ref ref, T default_) {
 					return Base::ephemeral_map(ref.get(), std::move(default_));
@@ -169,7 +169,7 @@ namespace graph {
 				template <class T>
 				static map_type<T> map(const G& g, T default_) {
 					return g.edge_map(std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				using ephemeral_map_type = typename G::template Ephemeral_edge_map<T>;
 				template <class T>
@@ -210,7 +210,7 @@ namespace graph {
 				template <class T>
 				static decltype(auto) map(Ptr ptr, T default_) {
 					return Base::map(*ptr, std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				static decltype(auto) ephemeral_map(Ptr ptr, T default_) {
 					return Base::ephemeral_map(*ptr, std::move(default_));
@@ -247,7 +247,7 @@ namespace graph {
 				template <class T>
 				static decltype(auto) map(Ref ref, T default_) {
 					return Base::map(ref.get(), std::move(default_));
-				} // LCOV_EXCL_LINE (unreachable)
+				}
 				template <class T>
 				static decltype(auto) ephemeral_map(Ref ref, T default_) {
 					return Base::ephemeral_map(ref.get(), std::move(default_));

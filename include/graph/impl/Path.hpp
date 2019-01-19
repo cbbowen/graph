@@ -21,7 +21,7 @@ namespace graph {
 				Path(const G& g, Vert source) :
 					_vert(std::move(source)) {
 				}
-				Path(const G& g) : Path(g, Verts::null(g)) {}
+				explicit Path(const G& g) : Path(g, Verts::null(g)) {}
 				Path(const G& g, Vert source, _container_type edges) :
 					_edges(std::move(edges)),
 					_vert(std::move(source)) {
