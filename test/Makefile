@@ -32,7 +32,7 @@ SRCDIRS = .
 SRCEXTS = .cpp
 
 # OPTION: Add additional header directories and extensions
-HDRDIRS = $(SRCDIRS) ../include ../extern/ranges-v3/include ../extern/catch2/single_include
+HDRDIRS = $(SRCDIRS) ../include ../extern/range-v3/include ../extern/Catch2/single_include
 HDREXTS = .h .hpp
 
 # OPTION: Add additional libary directories and libaries
