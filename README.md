@@ -1,4 +1,5 @@
 
+[![Build Status](https://travis-ci.org/cbbowen/graph.svg?branch=master)](https://travis-ci.org/cbbowen/graph)
 [![codecov](https://codecov.io/gh/cbbowen/graph/branch/master/graph/badge.svg)](https://codecov.io/gh/cbbowen/graph)
 
 # Easy
