@@ -36,6 +36,9 @@
     <ClCompile Include="..\test\Stable_edge_list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\Tensor_product.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\graph\impl\Adjacency_list.hpp">
@@ -146,6 +149,9 @@
     <ClInclude Include="..\include\graph\Atomic_edge_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\graph\impl\Tensor_product.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\include\graph\dijkstra.inl">
@@ -170,6 +176,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\graph\floyd_warshall.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\include\graph\product.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

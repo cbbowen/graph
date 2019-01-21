@@ -65,25 +65,23 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\test\Atomic_adjacency_list.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\test\Edge_list.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\test\main.cpp" />
-    <ClCompile Include="..\test\Stable_adjacency_list.cpp" />
-    <ClCompile Include="..\test\Stable_edge_list.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ExcludedFromBuild>
+    <ClCompile Include="..\test\Stable_adjacency_list.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\test\Stable_edge_list.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\Tensor_product.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\graph\Adjacency_list.hpp" />
@@ -113,6 +111,7 @@
     <ClInclude Include="..\include\graph\impl\Stable_edge_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Stable_vert_list.hpp" />
     <ClInclude Include="..\include\graph\impl\Subforest.hpp" />
+    <ClInclude Include="..\include\graph\impl\Tensor_product.hpp" />
     <ClInclude Include="..\include\graph\impl\tracker.hpp" />
     <ClInclude Include="..\include\graph\impl\traits.hpp" />
     <ClInclude Include="..\include\graph\impl\unordered_key_map.hpp" />
@@ -129,6 +128,7 @@
     <None Include="..\include\graph\floyd_warshall.inl" />
     <None Include="..\include\graph\format.inl" />
     <None Include="..\include\graph\parallel_bidirectional_search.inl" />
+    <None Include="..\include\graph\product.inl" />
     <None Include="..\include\graph\random.inl" />
     <None Include="..\include\graph\reverse.inl" />
     <None Include="..\include\graph\subforest.inl" />

@@ -25,7 +25,7 @@ namespace graph {
 				explicit derivable(Args&&... args) :
 					Impl(std::forward<Args>(args)...) {
 				}
-			protected:
+			//protected:
 				const Impl& _impl() const {
 					return *this;
 				}
@@ -36,7 +36,7 @@ namespace graph {
 			template <class Impl>
 			struct derivable<Impl,
 				std::enable_if_t<std::is_final_v<Impl>>> {
-			protected:
+			//protected:
 				template <class... Args>
 				explicit derivable(Args&&... args) :
 					_value(std::forward<Args>(args)...) {
@@ -580,3 +580,4 @@ namespace graph {
 #include "bidirectional_search.inl"
 #include "parallel_bidirectional_search.inl"
 #include "format.inl"
+#include "product.inl"

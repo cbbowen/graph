@@ -16,7 +16,7 @@ namespace graph {
 				using reference = value_type&;
 				using inner_key_type = typename key_type::key_type;
 				using _container_type = std::unordered_map<inner_key_type, T>;
-				unordered_key_map(T default_) :
+				explicit unordered_key_map(T default_) :
 					_default(std::move(default_)) {
 				}
 				const_reference operator()(const key_type& k) const {
