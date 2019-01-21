@@ -8,10 +8,12 @@ addons:
     packages:
       - g++-8
 
-env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && GCOV=gcov-8"
+env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" GCOV=gcov-8
 before_install: eval "${MATRIX_EVAL}"
 
 before_script: cd test
-script: make run CONFIG=gcov
+script: make run CONFIG=gcov GCOV="${GCOV}"
 
-after_success: bash <(curl -s https://codecov.io/bash)
+after_success:
+  # Don't let codecov run gcov because it doesn't work correctly with gcov-8 (even with -x).
+  - bash <(curl -s https://codecov.io/bash) -x "${GCOV}" -X gcov

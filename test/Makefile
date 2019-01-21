@@ -174,7 +174,7 @@ else ifeq ($(CONFIG),gcov)
 	$(RM) $(OBJDIR)/*.gcda
 	$(RM) *.gcov
 	$(OUTPUT)
-	$(GCOV) --object-directory $(OBJDIR) --relative-only --source-prefix .. --preserve-paths $(SOURCES)
+	$(GCOV) --object-directory $(OBJDIR) --relative-only --source-prefix .. --preserve-paths $(SOURCES) 2>/dev/null
 	$(RM) extern\#*.gcov
 else ifeq ($(CONFIG),lcov)
 	$(RM) $(OBJDIR)/*.gcda
