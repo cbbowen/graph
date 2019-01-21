@@ -59,7 +59,6 @@ SCENARIO("stable out-adjacency lists behave properly", "[Stable_out_adjacency_li
 		}
 		WHEN("searching for shortest paths from a vertex") {
 			auto s = gt.random_vert(r);
-			//auto weight = [](auto e) { return 1; };
 			auto weight = g.edge_map(0.0);
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution<double>{}(r);
@@ -100,41 +99,41 @@ SCENARIO("stable out-adjacency lists behave properly", "[Stable_out_adjacency_li
 			}
 		}
 	}
-	//GIVEN("a complete out-adjacency list") {
-	//	std::mt19937 r;
-	//	G g;
-	//	const std::size_t M = 100;
-	//	for (std::size_t m = 0; m < M; ++m)
-	//		g.insert_vert();
-	//	for (auto s : g.verts()) {
-	//		for (auto t : g.verts()) {
-	//			g.insert_edge(s, t);
-	//		}
-	//	}
-	//	REQUIRE(g.order() == M);
-	//	REQUIRE(g.size() == M * M);
-	//	Out_edge_graph_tester gt{g};
+	GIVEN("a complete out-adjacency list") {
+		std::mt19937 r;
+		G g;
+		const std::size_t M = 100;
+		for (std::size_t m = 0; m < M; ++m)
+			g.insert_vert();
+		for (auto s : g.verts()) {
+			for (auto t : g.verts()) {
+				g.insert_edge(s, t);
+			}
+		}
+		REQUIRE(g.order() == M);
+		REQUIRE(g.size() == M * M);
+		Out_edge_graph_tester gt{g};
 
-	//	WHEN("searching for weighted shortest paths from a vertex") {
-	//		auto weight = g.edge_map(1.0);
-	//		std::uniform_real_distribution<double> weight_dist;
-	//		for (auto e : g.edges())
-	//			weight[e] = weight_dist(r);
-	//		auto s = gt.random_vert(r);
-	//		auto paths = g.shortest_paths_from(s, weight);
-	//		REQUIRE(paths(s).first == 0);
-	//		for (auto v : g.verts()) {
-	//			auto e = paths(v).second;
-	//			if (e != g.null_edge()) {
-	//				REQUIRE(g.head(e) == v);
-	//				REQUIRE(paths(v).first == paths(g.tail(e)).first + weight(e));
-	//			}
-	//		}
-	//		for (auto e : g.edges()) {
-	//			REQUIRE(!(paths(g.head(e)).first > paths(g.tail(e)).first + weight(e)));
-	//		}
-	//	}
-	//}
+		WHEN("searching for weighted shortest paths from a vertex") {
+			auto weight = g.edge_map(0.0);
+			std::uniform_real_distribution<double> weight_dist;
+			for (auto e : g.edges())
+				weight[e] = weight_dist(r);
+			auto s = gt.random_vert(r);
+			auto [tree, distances] = g.shortest_paths_from(s, weight);
+			REQUIRE(distances(s) == 0);
+			for (auto v : g.verts()) {
+				auto e = tree.in_edge_or_null(v);
+				if (e != g.null_edge()) {
+					REQUIRE(g.head(e) == v);
+					REQUIRE(distances(v) == distances(g.tail(e)) + weight(e));
+				}
+			}
+			for (auto e : g.edges()) {
+				REQUIRE(!(distances(g.head(e)) > distances(g.tail(e)) + weight(e)));
+			}
+		}
+	}
 }
 
 SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list]") {
@@ -191,7 +190,6 @@ SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list
 		}
 		WHEN("searching for shortest paths to a vertex") {
 			auto t = gt.random_vert(r);
-			//auto weight = [](auto e) { return 1; };
 			auto weight = g.edge_map(0.0);
 			for (auto e : g.edges())
 				weight[e] = std::uniform_real_distribution<double>{}(r);
@@ -207,6 +205,41 @@ SCENARIO("stable in-adjacency lists behave properly", "[Stable_in_adjacency_list
 			}
 			for (auto e : g.edges())
 				REQUIRE(!(distances(g.tail(e)) > distances(g.head(e)) + weight(e)));
+		}
+	}
+	GIVEN("a complete out-adjacency list") {
+		std::mt19937 r;
+		G g;
+		const std::size_t M = 100;
+		for (std::size_t m = 0; m < M; ++m)
+			g.insert_vert();
+		for (auto s : g.verts()) {
+			for (auto t : g.verts()) {
+				g.insert_edge(s, t);
+			}
+		}
+		REQUIRE(g.order() == M);
+		REQUIRE(g.size() == M * M);
+		In_edge_graph_tester gt{ g };
+
+		WHEN("searching for weighted shortest paths to a vertex") {
+			auto weight = g.edge_map(0.0);
+			std::uniform_real_distribution<double> weight_dist;
+			for (auto e : g.edges())
+				weight[e] = weight_dist(r);
+			auto s = gt.random_vert(r);
+			auto [tree, distances] = g.shortest_paths_to(s, weight);
+			REQUIRE(distances(s) == 0);
+			for (auto v : g.verts()) {
+				auto e = tree.out_edge_or_null(v);
+				if (e != g.null_edge()) {
+					REQUIRE(g.tail(e) == v);
+					REQUIRE(distances(v) == distances(g.head(e)) + weight(e));
+				}
+			}
+			for (auto e : g.edges()) {
+				REQUIRE(!(distances(g.tail(e)) > distances(g.head(e)) + weight(e)));
+			}
 		}
 	}
 }
