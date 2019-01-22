@@ -58,16 +58,19 @@ void some_function(const graph::Graph<G>& g);
 
 This works similarly for the [`Out_edge_graph`](doc/Out_edge_graph.md), [`In_edge_graph`](doc/In_edge_graph.md), and [`Bi_edge_graph`](doc/Bi_edge_graph.md) concepts.
 
-# Building the tests with conan
-Building the tests is easy given you have installed [conan](https://conan.io) and [CMake](http://cmake.org):
+# Running the tests
+Using `make`:
+- `cd test`
+- `make run`
 
-- `mkdir build`
-- `cd build/`
+Using [CMake](http://cmake.org):
+- `mkdir build && build`
+- `cmake .. && make && make test`
+
+If you have [conan](https://conan.io) and [CMake](http://cmake.org):
+- `mkdir build && build`
 - `conan install ..`
-- `cmake ..`
-- `make`
-
-The tests executable should be found in `bin`.
+- `cmake .. && make && make test`
 
 # Contributing
 

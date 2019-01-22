@@ -6,14 +6,12 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-8
+      - g++-7
 
-env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" GCOV=gcov-8
+env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" GCOV=gcov-7
 before_install: eval "${MATRIX_EVAL}"
 
-before_script: cd test
-script: make run CONFIG=gcov GCOV="${GCOV}"
+before_script: mkdir build && cd "$_"
+script: cmake -DTEST_COVERAGE=ON .. && make && make test
 
-after_success:
-  # Don't let codecov run gcov because it doesn't work correctly with gcov-8 (even with -x).
-  - bash <(curl -s https://codecov.io/bash) -x "${GCOV}" -X gcov
+after_success: bash <(curl -s https://codecov.io/bash) -x "${GCOV}"
